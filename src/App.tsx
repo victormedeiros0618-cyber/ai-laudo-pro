@@ -21,7 +21,7 @@ const App = () => (
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          
+
           {/* Protected routes */}
           <Route element={<AppShell />}>
             <Route path="/dashboard" element={<Dashboard />} />

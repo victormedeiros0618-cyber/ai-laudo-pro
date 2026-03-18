@@ -73,19 +73,19 @@ export interface Subscription {
   current_period_end?: string;
 }
 
-export const PRAZOS_CRM: Record<string, number | null> = {
-  'Inspeção Predial':  3 * 365,
-  'Laudo Cautelar':    2 * 365,
-  'Laudo de Reforma':  180,
-  'Vistoria Técnica':  365,
-  'Laudo de Avaliação':365,
-  'Perícia Judicial':  null,
+export const PRAZOS_CRM: Record<TipoVistoria, number | null> = { ... }
+'Inspeção Predial': 3 * 365,
+  'Laudo Cautelar': 2 * 365,
+    'Laudo de Reforma': 180,
+      'Vistoria Técnica': 365,
+        'Laudo de Avaliação': 365,
+          'Perícia Judicial': null,
 };
 
 export const GRAVIDADE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  baixo:   { bg: '#EAFAF1', text: '#1A7340', border: '#1A7340' },
-  medio:   { bg: '#FEF5EC', text: '#E67E22', border: '#E67E22' },
-  alto:    { bg: '#FDF3E7', text: '#C0392B', border: '#E67E22' },
+  baixo: { bg: '#EAFAF1', text: '#1A7340', border: '#1A7340' },
+  medio: { bg: '#FEF5EC', text: '#E67E22', border: '#E67E22' },
+  alto: { bg: '#FDF3E7', text: '#C0392B', border: '#E67E22' },
   critico: { bg: '#FDEDEC', text: '#C0392B', border: '#C0392B' },
 };
 
