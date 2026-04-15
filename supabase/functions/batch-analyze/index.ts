@@ -10,6 +10,8 @@
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 // @ts-expect-error - Variável de ambiente do Supabase
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+// @ts-expect-error - Variável de ambiente do Supabase
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') ?? 'https://ai-laudo-pro.vercel.app';
 
 // Máximo de chamadas paralelas ao gemini-analyze para evitar rate limit
 const MAX_CONCURRENCY = 3;
@@ -54,7 +56,7 @@ interface FotoResultado {
 }
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, apikey',
   'Access-Control-Max-Age': '86400',
