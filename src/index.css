@@ -298,21 +298,65 @@ button:disabled:active { transform: none; }
   box-shadow: var(--shadow-gold);
 }
 
-/* Gradiente técnico (landing hero) */
+/* Gradiente técnico (landing hero)
+   - Light: fundo claro com toque azul, legível para textos escuros
+   - Dark:  gradiente azul-preto técnico para textos brancos
+   Usar `background-color` em vez de `background` shorthand para
+   não sobrescrever `background-image` quando combinado com `.bg-tech-grid`.
+*/
 .bg-gradient-tech {
-  background: linear-gradient(135deg, #1E3A8A 0%, #1E40AF 50%, #3B82F6 100%);
+  background-color: #F3F4F6;
+  background-image: linear-gradient(135deg, #F3F4F6 0%, #E8EEF9 50%, #F9FAFB 100%);
 }
 .dark .bg-gradient-tech {
-  background: linear-gradient(135deg, #0B0F1A 0%, #151B2E 50%, #1E2642 100%);
+  background-color: #0B0F1A;
+  background-image: linear-gradient(135deg, #0B0F1A 0%, #151B2E 50%, #1E2642 100%);
+}
+
+/* Gradiente azul sólido (CTA final, contraste forte sempre) */
+.bg-gradient-tech-solid {
+  background-color: #1E3A8A;
+  background-image: linear-gradient(135deg, #1E3A8A 0%, #1E40AF 50%, #3B82F6 100%);
+}
+.dark .bg-gradient-tech-solid {
+  background-color: #0B0F1A;
+  background-image: linear-gradient(135deg, #0B0F1A 0%, #151B2E 50%, #1E2642 100%);
+}
+
+/* Combo: gradiente + grid blueprint — overlay sutil do grid em cima */
+.bg-gradient-tech.bg-tech-grid,
+.bg-gradient-tech-solid.bg-tech-grid {
+  background-image:
+    linear-gradient(rgba(30, 58, 138, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 58, 138, 0.06) 1px, transparent 1px),
+    linear-gradient(135deg, #F3F4F6 0%, #E8EEF9 50%, #F9FAFB 100%);
+  background-size: 32px 32px, 32px 32px, 100% 100%;
+}
+.bg-gradient-tech-solid.bg-tech-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(135deg, #1E3A8A 0%, #1E40AF 50%, #3B82F6 100%);
+  background-size: 32px 32px, 32px 32px, 100% 100%;
+}
+.dark .bg-gradient-tech.bg-tech-grid,
+.dark .bg-gradient-tech-solid.bg-tech-grid {
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(135deg, #0B0F1A 0%, #151B2E 50%, #1E2642 100%);
+  background-size: 32px 32px, 32px 32px, 100% 100%;
 }
 
 .bg-gradient-gold {
   background: linear-gradient(135deg, #DAA520 0%, #F4C430 100%);
 }
 
-/* Texto com gradiente (usar em H1 destaques) */
+/* Texto com gradiente (usar em H1 destaques)
+   Light: azul-escuro-para-médio (alto contraste em fundo claro)
+   Dark:  azul-claro-para-neon (alto contraste em fundo escuro) */
 .text-gradient-primary {
-  background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+  background: linear-gradient(135deg, #1E3A8A 0%, #2747B8 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

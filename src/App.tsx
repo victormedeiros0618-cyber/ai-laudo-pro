@@ -4,6 +4,7 @@ import { PrivateRoute } from '@/components/auth/PrivateRoute';
 import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import Login from '@/pages/Login';
+import Landing from '@/pages/landing/Landing';
 import Dashboard from '@/pages/Dashboard';
 import NovoLaudo from '@/pages/NovoLaudo';
 import Historico from '@/pages/Historico';
@@ -19,11 +20,12 @@ export default function App() {
         <AuthProvider>
           <Routes>
             {/* Públicas */}
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/cadastro" element={<Login />} />
 
             {/* Protegidas */}
             <Route element={<PrivateRoute><AppShell /></PrivateRoute>}>
-              <Route path="/" element={<Dashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/novo-laudo" element={<NovoLaudo />} />
               <Route path="/historico" element={<Historico />} />
