@@ -56,6 +56,7 @@ export function SecaoAssinatura({
   };
 
   // Configurar estilo do traço ao entrar no modo desenho
+  // Nota: stroke sempre escuro — o canvas tem fundo claro fixo (bg branco p/ legibilidade da assinatura no PDF)
   useEffect(() => {
     if (mode !== 'draw') return;
     const ctx = getCtx();
@@ -295,9 +296,15 @@ export function SecaoAssinatura({
               <p className="text-xs font-body" style={{ color: 'var(--color-text-muted)' }}>
                 Assine no espaço abaixo com o mouse ou toque na tela
               </p>
+              {/* Canvas com fundo sempre branco (vai para PDF) — ring neon marca que é editável */}
               <div
-                className="rounded-[var(--radius-md)] overflow-hidden"
-                style={{ border: '1.5px solid var(--color-border)', background: '#fafafa', cursor: 'crosshair' }}
+                className="rounded-[var(--radius-md)] overflow-hidden transition-shadow"
+                style={{
+                  border: '1.5px solid var(--color-neon-dim)',
+                  background: '#fafafa',
+                  cursor: 'crosshair',
+                  boxShadow: 'var(--shadow-neon)',
+                }}
               >
                 <canvas
                   ref={canvasRef}
@@ -314,6 +321,9 @@ export function SecaoAssinatura({
                   onTouchEnd={endDraw}
                 />
               </div>
+              <p className="text-[10px] font-body opacity-60" style={{ color: 'var(--color-text-muted)' }}>
+                Fundo claro propositalmente — a assinatura é usada em PDFs brancos.
+              </p>
 
               <div className="flex gap-2">
                 <button

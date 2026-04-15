@@ -8,10 +8,23 @@ import { useLaudosPaginados, useDeletarLaudo, useTiposVistoria } from '@/hooks/u
 import { LaudoListSkeleton } from '@/components/ui/skeletons';
 import { AccessibleModal } from '@/components/ui/accessible-modal';
 
-function calcularBadgeCRM(laudo: Laudo): BadgeCRMData {
+// Severidade do badge — dirige cor + animação neon para "vencido"
+type BadgeSeverity = 'neutral' | 'danger' | 'warning' | 'success';
+
+interface BadgeCRMComputed extends BadgeCRMData {
+  severity: BadgeSeverity;
+}
+
+function calcularBadgeCRM(laudo: Laudo): BadgeCRMComputed {
   const prazo = PRAZOS_CRM[laudo.tipo_vistoria];
   if (prazo === null) {
-    return { label: 'Processo Judicial', color: '#718096', bg: '#F7FAFC', icon: 'gavel' };
+    return {
+      label: 'Processo Judicial',
+      color: 'var(--color-text-muted)',
+      bg: 'var(--color-surface-alt)',
+      icon: 'gavel',
+      severity: 'neutral',
+    };
   }
   const dataVistoria = new Date(laudo.data_vistoria);
   const dataVencimento = new Date(dataVistoria.getTime() + (prazo as number) * 24 * 60 * 60 * 1000);
@@ -19,12 +32,30 @@ function calcularBadgeCRM(laudo: Laudo): BadgeCRMData {
   const diasRestantes = Math.floor((dataVencimento.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
 
   if (diasRestantes < 0) {
-    return { label: `Vencido há ${Math.abs(diasRestantes)}d`, color: '#C0392B', bg: '#FDEDEC', icon: 'error' };
+    return {
+      label: `Vencido há ${Math.abs(diasRestantes)}d`,
+      color: 'var(--color-danger)',
+      bg: 'var(--color-danger-light)',
+      icon: 'error',
+      severity: 'danger',
+    };
   }
   if (diasRestantes <= 30) {
-    return { label: `Vence em ${diasRestantes}d`, color: '#E67E22', bg: '#FEF5EC', icon: 'schedule' };
+    return {
+      label: `Vence em ${diasRestantes}d`,
+      color: 'var(--color-warning)',
+      bg: 'var(--color-warning-light)',
+      icon: 'schedule',
+      severity: 'warning',
+    };
   }
-  return { label: `Válido · vence ${dataVencimento.toLocaleDateString('pt-BR')}`, color: '#1A7340', bg: '#EAFAF1', icon: 'check_circle' };
+  return {
+    label: `Válido · vence ${dataVencimento.toLocaleDateString('pt-BR')}`,
+    color: 'var(--color-success)',
+    bg: 'var(--color-success-light)',
+    icon: 'check_circle',
+    severity: 'success',
+  };
 }
 
 export default function Historico() {
@@ -80,9 +111,25 @@ export default function Historico() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-        Histórico de Laudos
-      </h1>
+      {/* Header com título + CTA */}
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="font-display text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+            Histórico de Laudos
+          </h1>
+          <p className="text-sm font-body mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+            Busque, filtre e gerencie seus laudos técnicos
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate('/novo-laudo')}
+          className="flex items-center gap-2 px-4 py-2 rounded-[var(--radius-sm)] text-sm font-display font-semibold text-white transition-all hover:brightness-110"
+          style={{ background: 'var(--color-primary)', boxShadow: 'var(--shadow-card)' }}
+        >
+          + Novo Laudo
+        </button>
+      </div>
 
       {/* Busca */}
       <div className="relative">
@@ -176,14 +223,20 @@ export default function Historico() {
               return (
                 <div
                   key={laudo.id}
-                  className="rounded-[var(--radius-md)] overflow-hidden"
-                  style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
+                  className="rounded-[var(--radius-md)] overflow-hidden transition-all hover:shadow-[var(--shadow-neon)]"
+                  style={{
+                    border: isExpanded
+                      ? '1px solid var(--color-neon-dim)'
+                      : '1px solid var(--color-border)',
+                    background: 'var(--color-surface)',
+                    boxShadow: isExpanded ? 'var(--shadow-neon)' : 'var(--shadow-card)',
+                  }}
                 >
                   <button
                     type="button"
                     onClick={() => setExpandedId(isExpanded ? null : laudo.id)}
                     aria-expanded={isExpanded ? 'true' : 'false'}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-left"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:brightness-[0.97] dark:hover:brightness-110"
                   >
                     <span
                       className="px-2 py-0.5 rounded text-xs font-display font-medium whitespace-nowrap"
@@ -202,8 +255,14 @@ export default function Historico() {
                       {new Date(laudo.data_vistoria).toLocaleDateString('pt-BR')}
                     </span>
                     <span
-                      className="px-2 py-0.5 rounded-full text-xs font-display font-medium whitespace-nowrap"
-                      style={{ background: badge.bg, color: badge.color }}
+                      className={`px-2 py-0.5 rounded-full text-xs font-display font-medium whitespace-nowrap ${
+                        badge.severity === 'danger' ? 'pulse-neon' : ''
+                      }`}
+                      style={{
+                        background: badge.bg,
+                        color: badge.color,
+                        border: `1px solid ${badge.color}`,
+                      }}
                     >
                       {badge.label}
                     </span>

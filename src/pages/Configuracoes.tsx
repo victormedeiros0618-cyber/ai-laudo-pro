@@ -146,10 +146,19 @@ export default function Configuracoes() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#D4AF37] mx-auto mb-2" />
-          <p className="text-white text-sm">Carregando configuracoes...</p>
+          <div
+            className="animate-spin rounded-full h-10 w-10 border-2 mx-auto mb-3"
+            style={{
+              borderColor: 'var(--color-border)',
+              borderTopColor: 'var(--color-neon)',
+              boxShadow: 'var(--shadow-neon)',
+            }}
+          />
+          <p className="text-sm font-body" style={{ color: 'var(--color-text-secondary)' }}>
+            Carregando configurações...
+          </p>
         </div>
       </div>
     );
@@ -159,25 +168,51 @@ export default function Configuracoes() {
     <div className="space-y-4">
       {/* Header com Status de Save */}
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-          Configuracoes
-        </h1>
+        <div>
+          <h1 className="font-display text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+            Configurações
+          </h1>
+          <p className="text-sm font-body mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+            Personalize sua identidade e preferências
+          </p>
+        </div>
 
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-2 text-xs font-display font-semibold">
           {saveStatus === 'saving' && (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-full" style={{ background: 'var(--color-primary)', color: 'white' }}>
+            <div
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full pulse-neon"
+              style={{
+                background: 'var(--color-primary)',
+                color: '#fff',
+                boxShadow: 'var(--shadow-neon)',
+              }}
+            >
               <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current" />
               Salvando...
             </div>
           )}
           {saveStatus === 'saved' && (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-full" style={{ background: '#10b981', color: 'white' }}>
-              <Check size={14} /> Salvo
+            <div
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+              style={{
+                background: 'var(--color-success)',
+                color: '#fff',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.35)',
+              }}
+            >
+              <Check size={14} strokeWidth={3} /> Salvo
             </div>
           )}
           {saveStatus === 'error' && (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-full" style={{ background: '#ef4444', color: 'white' }}>
-              <AlertCircle size={14} /> Erro ao salvar
+            <div
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+              style={{
+                background: 'var(--color-danger)',
+                color: '#fff',
+                boxShadow: '0 2px 8px rgba(220, 38, 38, 0.35)',
+              }}
+            >
+              <AlertCircle size={14} strokeWidth={3} /> Erro ao salvar
             </div>
           )}
         </div>

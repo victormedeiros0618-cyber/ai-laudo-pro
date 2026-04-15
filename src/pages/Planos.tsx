@@ -50,34 +50,68 @@ export default function Planos() {
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
-      <div className="text-center">
-        <h1 className="font-display text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+      <div className="text-center relative">
+        <div
+          aria-hidden
+          className="absolute inset-x-0 -top-4 h-32 pointer-events-none opacity-40"
+          style={{
+            background:
+              'radial-gradient(ellipse at center top, rgba(218, 165, 32, 0.2), transparent 60%)',
+          }}
+        />
+        <h1
+          className="relative font-display text-3xl font-bold text-gradient-primary"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
           Escolha seu plano
         </h1>
-        <p className="text-sm font-body mt-2" style={{ color: 'var(--color-text-muted)' }}>
+        <p className="relative text-sm font-body mt-2" style={{ color: 'var(--color-text-muted)' }}>
           Escale sua produção de laudos técnicos
         </p>
       </div>
 
-      {/* Toggle */}
+      {/* Toggle mensal/anual */}
       <div className="flex items-center justify-center gap-3">
-        <span className="text-sm font-body" style={{ color: !annual ? 'var(--color-text-primary)' : 'var(--color-text-muted)' }}>
+        <span
+          className="text-sm font-display font-medium transition-colors"
+          style={{ color: !annual ? 'var(--color-text-primary)' : 'var(--color-text-muted)' }}
+        >
           Mensal
         </span>
         <button
           onClick={() => setAnnual(!annual)}
           title={annual ? 'Mudar para cobrança mensal' : 'Mudar para cobrança anual'}
           aria-label={annual ? 'Mudar para cobrança mensal' : 'Mudar para cobrança anual'}
-          className="w-12 h-6 rounded-full relative transition-colors"
-          style={{ background: annual ? 'var(--color-primary)' : 'var(--color-border-dark)' }}
+          className="w-12 h-6 rounded-full relative transition-all"
+          style={{
+            background: annual ? 'var(--color-primary)' : 'var(--color-border-dark)',
+            boxShadow: annual ? 'var(--shadow-neon)' : 'none',
+          }}
         >
           <div
-            className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"
-            style={{ left: annual ? '26px' : '2px' }}
+            className="absolute top-0.5 w-5 h-5 rounded-full transition-all"
+            style={{
+              left: annual ? '26px' : '2px',
+              background: '#FFFFFF',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
+            }}
           />
         </button>
-        <span className="text-sm font-body" style={{ color: annual ? 'var(--color-text-primary)' : 'var(--color-text-muted)' }}>
-          Anual <span className="text-xs font-display font-bold" style={{ color: 'var(--color-success)' }}>-20%</span>
+        <span
+          className="text-sm font-display font-medium flex items-center gap-1.5 transition-colors"
+          style={{ color: annual ? 'var(--color-text-primary)' : 'var(--color-text-muted)' }}
+        >
+          Anual
+          <span
+            className="text-[10px] font-display font-bold px-1.5 py-0.5 rounded-full"
+            style={{
+              background: 'var(--color-success-light)',
+              color: 'var(--color-success)',
+              border: '1px solid var(--color-success)',
+            }}
+          >
+            -20%
+          </span>
         </span>
       </div>
 
@@ -89,19 +123,40 @@ export default function Planos() {
           return (
             <div
               key={plan.id}
-              className="rounded-[var(--radius-lg)] p-6 relative"
+              className={`rounded-[var(--radius-lg)] p-6 relative transition-all overflow-hidden ${
+                plan.popular ? 'md:scale-105' : 'hover:scale-[1.02]'
+              }`}
               style={{
                 background: 'var(--color-surface)',
-                border: plan.popular ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
-                boxShadow: plan.popular ? 'var(--shadow-gold)' : 'var(--shadow-card)',
+                border: plan.popular
+                  ? '2px solid var(--color-neon)'
+                  : '1px solid var(--color-border)',
+                boxShadow: plan.popular
+                  ? 'var(--shadow-neon), var(--shadow-lg)'
+                  : 'var(--shadow-card)',
               }}
             >
+              {/* Glow radial no topo do card popular */}
               {plan.popular && (
                 <div
-                  className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-display font-bold text-white flex items-center gap-1"
-                  style={{ background: 'var(--color-accent)' }}
+                  aria-hidden
+                  className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-48 pointer-events-none opacity-50"
+                  style={{
+                    background:
+                      'radial-gradient(circle, rgba(0, 212, 255, 0.4), transparent 70%)',
+                  }}
+                />
+              )}
+
+              {plan.popular && (
+                <div
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-display font-bold text-white flex items-center gap-1 pulse-neon"
+                  style={{
+                    background: 'var(--color-primary)',
+                    boxShadow: 'var(--shadow-neon)',
+                  }}
                 >
-                  <Star size={10} /> Mais popular
+                  <Star size={10} fill="currentColor" /> Mais popular
                 </div>
               )}
 
@@ -144,11 +199,12 @@ export default function Planos() {
                     toast.info('Redirecionando para checkout...');
                   }
                 }}
-                className="w-full py-2.5 rounded-[var(--radius-sm)] text-sm font-display font-semibold transition-colors"
+                className="relative w-full py-2.5 rounded-[var(--radius-sm)] text-sm font-display font-semibold transition-all hover:brightness-110"
                 style={{
                   background: plan.popular ? 'var(--color-primary)' : 'transparent',
                   color: plan.popular ? '#fff' : 'var(--color-primary)',
                   border: plan.popular ? 'none' : '1px solid var(--color-primary)',
+                  boxShadow: plan.popular ? 'var(--shadow-neon)' : 'none',
                 }}
               >
                 {plan.id === 'escritorio' ? 'Falar com comercial' : `Assinar ${plan.name}`}
