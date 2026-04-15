@@ -29,22 +29,11 @@ export function KPICard({ icon, title, value, subtitle, danger, isLoading }: KPI
 
   return (
     <div
-      className="rounded-[var(--radius-md)] p-5 cursor-default group"
+      className="kpi-card rounded-[var(--radius-md)] p-5 cursor-default"
       style={{
         background: 'var(--color-surface)',
         borderLeft: `5px solid ${danger ? 'var(--color-danger)' : 'var(--color-accent)'}`,
         boxShadow: 'var(--shadow-card)',
-        transition: 'transform var(--transition), box-shadow var(--transition)',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-5px)';
-        e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
-        e.currentTarget.style.borderLeftWidth = '7px';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = 'var(--shadow-card)';
-        e.currentTarget.style.borderLeftWidth = '5px';
       }}
     >
       <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text-muted)' }}>

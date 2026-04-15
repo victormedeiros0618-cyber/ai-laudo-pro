@@ -66,6 +66,8 @@ export default function Planos() {
         </span>
         <button
           onClick={() => setAnnual(!annual)}
+          title={annual ? 'Mudar para cobrança mensal' : 'Mudar para cobrança anual'}
+          aria-label={annual ? 'Mudar para cobrança mensal' : 'Mudar para cobrança anual'}
           className="w-12 h-6 rounded-full relative transition-colors"
           style={{ background: annual ? 'var(--color-primary)' : 'var(--color-border-dark)' }}
         >

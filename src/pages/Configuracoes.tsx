@@ -1,199 +1,231 @@
-import { useState } from 'react';
-import { ChevronDown, ChevronRight, Plus, Trash2, Upload } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Check, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import type { Vistoriador } from '@/types';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/hooks/useAuth';
+import { useLocation } from 'react-router-dom';
+import type { Vistoriador, Configuracoes as ConfigType } from '@/types';
 
-interface AccordionSectionProps {
-  title: string;
-  isOpen: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-}
-
-function AccordionSection({ title, isOpen, onToggle, children }: AccordionSectionProps) {
-  return (
-    <div
-      className="rounded-[var(--radius-md)] overflow-hidden"
-      style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
-    >
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between px-5 py-4 text-left"
-      >
-        <span className="font-display text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-          {title}
-        </span>
-        {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-      </button>
-      {isOpen && (
-        <div className="px-5 pb-5" style={{ borderTop: '1px solid var(--color-border)' }}>
-          {children}
-        </div>
-      )}
-    </div>
-  );
-}
-
-const inputStyle = {
-  border: '1px solid var(--color-border)',
-  background: 'var(--color-surface)',
-  color: 'var(--color-text-primary)',
-};
+import { SecaoIdentidade } from '@/components/configuracoes/SecaoIdentidade';
+import { SecaoAssinatura } from '@/components/configuracoes/SecaoAssinatura';
+import { SecaoVistoriadores } from '@/components/configuracoes/SecaoVistoriadores';
+import { SecaoTextos } from '@/components/configuracoes/SecaoTextos';
 
 export default function Configuracoes() {
+  const { user } = useAuth();
+  const location = useLocation();
+
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
   const [corPrimaria, setCorPrimaria] = useState('#005f73');
-  const [vistoriadores, setVistoriadores] = useState<Vistoriador[]>([
-    { id: '1', nome: 'João Silva', cargo: 'Engenheiro Civil', crea_cau: 'CREA-SP 123456' },
-    { id: '2', nome: 'Maria Costa', cargo: 'Arquiteta', crea_cau: 'CAU-RJ 67890' },
-  ]);
-  const [novoVist, setNovoVist] = useState({ nome: '', cargo: '', crea_cau: '' });
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [assinaturaUrl, setAssinaturaUrl] = useState<string | null>(null);
+  const [assinaturaPreview, setAssinaturaPreview] = useState<string | null>(null);
+  const [vistoriadores, setVistoriadores] = useState<Vistoriador[]>([]);
   const [metodologia, setMetodologia] = useState('');
   const [conclusao, setConclusao] = useState('');
-  const [deleteModal, setDeleteModal] = useState<string | null>(null);
+
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ============ CARREGAMENTO INICIAL ============
+  useEffect(() => {
+    if (!user) return;
+
+    const loadConfiguracoes = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('configuracoes')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Erro ao carregar configuracoes:', error);
+          toast.error('Erro ao carregar configuracoes');
+          return;
+        }
+
+        if (data) {
+          setCorPrimaria(data.cor_primaria || '#005f73');
+          setLogoUrl(data.logo_url || null);
+          setAssinaturaUrl(data.assinatura_url || null);
+          setVistoriadores(data.vistoriadores || []);
+          setMetodologia(data.texto_metodologia || '');
+          setConclusao(data.texto_conclusao || '');
+        }
+      } catch (err) {
+        console.error('Erro:', err);
+        toast.error('Erro ao carregar configuracoes');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadConfiguracoes();
+  }, [user]);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, []);
+
+  // Abrir secao via query params
+  useEffect(() => {
+    const section = new URLSearchParams(location.search).get('section');
+    if (section) {
+      setActiveAccordion(section);
+      setTimeout(() => {
+        document.querySelector(`[data-section="${section}"]`)
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, [location.search]);
+
+  // ============ AUTO-SAVE (sem retry infinito) ============
+  const autoSave = async (data: Partial<ConfigType>) => {
+    if (!user || isSaving) return;
+
+    try {
+      setIsSaving(true);
+      setSaveStatus('saving');
+
+      const { error } = await supabase
+        .from('configuracoes')
+        .upsert(
+          { user_id: user.id, ...data, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id' }
+        );
+
+      if (error) {
+        console.error('Erro ao salvar:', error);
+        setSaveStatus('error');
+        toast.error(`Erro ao salvar: ${error.message}`);
+        return;
+      }
+
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch (err) {
+      console.error('Erro:', err);
+      setSaveStatus('error');
+      toast.error('Erro ao salvar configuracoes');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // ============ HANDLERS COM DEBOUNCE ============
+  const debouncedSave = (data: Partial<ConfigType>) => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => autoSave(data), 1000);
+  };
+
+  const handleCorPrimariaChange = (cor: string) => {
+    setCorPrimaria(cor);
+    debouncedSave({ cor_primaria: cor });
+  };
+
+  const handleMetodologiaChange = (text: string) => {
+    setMetodologia(text);
+    debouncedSave({ texto_metodologia: text });
+  };
+
+  const handleConclusaoChange = (text: string) => {
+    setConclusao(text);
+    debouncedSave({ texto_conclusao: text });
+  };
 
   const toggle = (key: string) => setActiveAccordion(prev => (prev === key ? null : key));
 
-  const addVistoriador = () => {
-    if (!novoVist.nome || !novoVist.cargo || !novoVist.crea_cau) {
-      toast.error('Preencha todos os campos');
-      return;
-    }
-    setVistoriadores(prev => [...prev, { ...novoVist, id: Date.now().toString() }]);
-    setNovoVist({ nome: '', cargo: '', crea_cau: '' });
-    toast.success('Vistoriador adicionado');
-  };
-
-  const removeVistoriador = (id: string) => {
-    setVistoriadores(prev => prev.filter(v => v.id !== id));
-    setDeleteModal(null);
-    toast.success('Vistoriador removido');
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#D4AF37] mx-auto mb-2" />
+          <p className="text-white text-sm">Carregando configuracoes...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      <h1 className="font-display text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-        Configurações
-      </h1>
+      {/* Header com Status de Save */}
+      <div className="flex items-center justify-between">
+        <h1 className="font-display text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+          Configuracoes
+        </h1>
 
-      {/* Identidade Visual */}
-      <AccordionSection title="Identidade Visual" isOpen={activeAccordion === 'identidade'} onToggle={() => toggle('identidade')}>
-        <div className="pt-4 space-y-4">
-          <div>
-            <label className="block text-xs font-display font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-              Logo do Escritório
-            </label>
-            <div
-              className="rounded-[var(--radius-md)] p-8 text-center cursor-pointer"
-              style={{ border: '2px dashed var(--color-border)', background: 'var(--color-bg)' }}
-            >
-              <Upload size={24} className="mx-auto mb-2" style={{ color: 'var(--color-text-muted)' }} />
-              <p className="text-xs font-body" style={{ color: 'var(--color-text-muted)' }}>Clique para enviar logo</p>
+        <div className="flex items-center gap-2 text-xs">
+          {saveStatus === 'saving' && (
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full" style={{ background: 'var(--color-primary)', color: 'white' }}>
+              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current" />
+              Salvando...
             </div>
-          </div>
-          <div>
-            <label className="block text-xs font-display font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-              Cor Primária do PDF
-            </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={corPrimaria}
-                onChange={(e) => setCorPrimaria(e.target.value)}
-                className="w-10 h-10 rounded cursor-pointer border-0"
-              />
-              <input
-                value={corPrimaria}
-                onChange={(e) => setCorPrimaria(e.target.value)}
-                className="px-3 py-2 rounded-[var(--radius-sm)] text-sm font-body w-28"
-                style={inputStyle}
-              />
-              <div className="h-10 flex-1 rounded-[var(--radius-sm)]" style={{ background: corPrimaria }} />
+          )}
+          {saveStatus === 'saved' && (
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full" style={{ background: '#10b981', color: 'white' }}>
+              <Check size={14} /> Salvo
             </div>
-          </div>
-        </div>
-      </AccordionSection>
-
-      {/* Assinatura */}
-      <AccordionSection title="Assinatura Digital" isOpen={activeAccordion === 'assinatura'} onToggle={() => toggle('assinatura')}>
-        <div className="pt-4 space-y-3">
-          <p className="text-xs font-body" style={{ color: 'var(--color-text-muted)' }}>
-            Use fundo transparente para melhor resultado no PDF
-          </p>
-          <div
-            className="rounded-[var(--radius-md)] p-8 text-center cursor-pointer"
-            style={{ border: '2px dashed var(--color-border)', background: 'var(--color-bg)' }}
-          >
-            <Upload size={24} className="mx-auto mb-2" style={{ color: 'var(--color-text-muted)' }} />
-            <p className="text-xs font-body" style={{ color: 'var(--color-text-muted)' }}>Enviar assinatura PNG</p>
-          </div>
-        </div>
-      </AccordionSection>
-
-      {/* Vistoriadores */}
-      <AccordionSection title="Vistoriadores" isOpen={activeAccordion === 'vistoriadores'} onToggle={() => toggle('vistoriadores')}>
-        <div className="pt-4 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-            <input value={novoVist.nome} onChange={e => setNovoVist(p => ({ ...p, nome: e.target.value }))} placeholder="Nome completo" className="px-3 py-2 rounded-[var(--radius-sm)] text-sm font-body" style={inputStyle} />
-            <input value={novoVist.cargo} onChange={e => setNovoVist(p => ({ ...p, cargo: e.target.value }))} placeholder="Cargo" className="px-3 py-2 rounded-[var(--radius-sm)] text-sm font-body" style={inputStyle} />
-            <input value={novoVist.crea_cau} onChange={e => setNovoVist(p => ({ ...p, crea_cau: e.target.value }))} placeholder="CREA/CAU" className="px-3 py-2 rounded-[var(--radius-sm)] text-sm font-body" style={inputStyle} />
-            <button onClick={addVistoriador} className="flex items-center justify-center gap-1 px-3 py-2 rounded-[var(--radius-sm)] text-sm font-display font-semibold text-white" style={{ background: 'var(--color-primary)' }}>
-              <Plus size={14} /> Adicionar
-            </button>
-          </div>
-          <div className="space-y-2">
-            {vistoriadores.map(v => (
-              <div key={v.id} className="flex items-center justify-between px-4 py-3 rounded-[var(--radius-sm)]" style={{ border: '1px solid var(--color-border)' }}>
-                <div className="text-sm font-body" style={{ color: 'var(--color-text-primary)' }}>
-                  {v.nome} · {v.cargo} · {v.crea_cau}
-                </div>
-                <button onClick={() => setDeleteModal(v.id)} style={{ color: 'var(--color-danger)' }}>
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </AccordionSection>
-
-      {/* Textos Padrão */}
-      <AccordionSection title="Textos Padrão do Laudo" isOpen={activeAccordion === 'textos'} onToggle={() => toggle('textos')}>
-        <div className="pt-4 space-y-4">
-          <div>
-            <label className="block text-xs font-display font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
-              Metodologia da Vistoria
-            </label>
-            <textarea value={metodologia} onChange={e => setMetodologia(e.target.value)} placeholder="Descreva a metodologia utilizada na vistoria..." rows={5} className="w-full px-3 py-2.5 rounded-[var(--radius-sm)] text-sm font-body resize-none" style={inputStyle} />
-          </div>
-          <div>
-            <label className="block text-xs font-display font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
-              Conclusão e Isenção de Responsabilidade
-            </label>
-            <textarea value={conclusao} onChange={e => setConclusao(e.target.value)} placeholder="Texto de conclusão ou isenção padrão..." rows={5} className="w-full px-3 py-2.5 rounded-[var(--radius-sm)] text-sm font-body resize-none" style={inputStyle} />
-          </div>
-          <button
-            onClick={() => toast.success('Configurações salvas!')}
-            className="px-6 py-2.5 rounded-[var(--radius-sm)] text-sm font-display font-semibold text-white"
-            style={{ background: 'var(--color-primary)' }}
-          >
-            Salvar alterações
-          </button>
-        </div>
-      </AccordionSection>
-
-      {/* Delete modal */}
-      {deleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}>
-          <div className="w-full max-w-sm rounded-[var(--radius-lg)] p-6" style={{ background: 'var(--color-surface)', boxShadow: 'var(--shadow-xl)' }}>
-            <h3 className="font-display text-sm font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>Confirmar exclusão</h3>
-            <p className="text-xs font-body mb-4" style={{ color: 'var(--color-text-secondary)' }}>Deseja remover este vistoriador?</p>
-            <div className="flex gap-2 justify-end">
-              <button onClick={() => setDeleteModal(null)} className="px-4 py-2 rounded-[var(--radius-sm)] text-xs font-display" style={{ border: '1px solid var(--color-border)' }}>Cancelar</button>
-              <button onClick={() => removeVistoriador(deleteModal)} className="px-4 py-2 rounded-[var(--radius-sm)] text-xs font-display font-semibold text-white" style={{ background: 'var(--color-danger)' }}>Excluir</button>
+          )}
+          {saveStatus === 'error' && (
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full" style={{ background: '#ef4444', color: 'white' }}>
+              <AlertCircle size={14} /> Erro ao salvar
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
+
+      <SecaoIdentidade
+        isOpen={activeAccordion === 'identidade'}
+        onToggle={() => toggle('identidade')}
+        userId={user!.id}
+        corPrimaria={corPrimaria}
+        onCorPrimariaChange={handleCorPrimariaChange}
+        logoUrl={logoUrl}
+        logoPreview={logoPreview}
+        onLogoChange={(url, preview) => { setLogoUrl(url); setLogoPreview(preview); }}
+        isSaving={isSaving}
+        onSavingChange={setIsSaving}
+        onAutoSave={autoSave}
+      />
+
+      <SecaoAssinatura
+        isOpen={activeAccordion === 'assinatura'}
+        onToggle={() => toggle('assinatura')}
+        userId={user!.id}
+        assinaturaUrl={assinaturaUrl}
+        assinaturaPreview={assinaturaPreview}
+        onAssinaturaChange={(url, preview) => { setAssinaturaUrl(url); setAssinaturaPreview(preview); }}
+        isSaving={isSaving}
+        onSavingChange={setIsSaving}
+        onAutoSave={autoSave}
+      />
+
+      <SecaoVistoriadores
+        isOpen={activeAccordion === 'vistoriadores'}
+        onToggle={() => toggle('vistoriadores')}
+        vistoriadores={vistoriadores}
+        onVistoriadoresChange={setVistoriadores}
+        onAutoSave={autoSave}
+      />
+
+      <SecaoTextos
+        isOpen={activeAccordion === 'textos'}
+        onToggle={() => toggle('textos')}
+        metodologia={metodologia}
+        conclusao={conclusao}
+        onMetodologiaChange={handleMetodologiaChange}
+        onConclusaoChange={handleConclusaoChange}
+        saveStatus={saveStatus}
+      />
     </div>
   );
 }

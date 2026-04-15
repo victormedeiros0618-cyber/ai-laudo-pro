@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
@@ -7,8 +7,24 @@ import { SandboxBanner } from '../ui/SandboxBanner';
 export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Fechar sidebar com Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && sidebarOpen) {
+        setSidebarOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [sidebarOpen]);
+
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--color-bg)' }}>
+      {/* Skip to content — visivel apenas com Tab */}
+      <a href="#main-content" className="skip-link">
+        Pular para o conteudo
+      </a>
+
       <SandboxBanner />
       <div className="flex flex-1 w-full">
         {/* Mobile overlay */}
@@ -35,15 +51,15 @@ export function AppShell() {
         {/* Main content */}
         <div className="flex-1 flex flex-col min-w-0">
           <TopBar onMenuClick={() => setSidebarOpen(true)} />
-          <main className="flex-1 p-6">
+          <main id="main-content" className="flex-1 p-6">
             <Outlet />
           </main>
           <footer className="text-center py-4 text-xs" style={{ color: 'var(--color-text-muted)' }}>
             <a href="/termos" className="hover:underline">Termos de Uso</a>
             <span className="mx-2">·</span>
-            <a href="/privacidade" className="hover:underline">Política de Privacidade</a>
+            <a href="/privacidade" className="hover:underline">Politica de Privacidade</a>
             <span className="mx-2">·</span>
-            © {new Date().getFullYear()} Engenharia AI
+            © {new Date().getFullYear()} VistorIA
           </footer>
         </div>
       </div>

@@ -107,11 +107,81 @@ body {
 }
 h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); font-weight: 600; }
 
-/* ── Foco Neon Universal ── */
-input:focus, textarea:focus, select:focus, button:focus-visible {
+/* ── Foco Universal (teclado) ── */
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+  border-color: var(--color-focus) !important;
+  box-shadow: var(--shadow-focus) !important;
+}
+input:focus:not(:focus-visible), textarea:focus:not(:focus-visible), select:focus:not(:focus-visible) {
   outline: none;
   border-color: var(--color-focus) !important;
   box-shadow: var(--shadow-focus) !important;
+}
+button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Skip Navigation ── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: 9999;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-primary);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: top 0.2s;
+}
+.skip-link:focus {
+  top: 8px;
+}
+
+/* ── KPICard Hover (CSS puro) ── */
+.kpi-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-left-width 0.2s ease;
+}
+.kpi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-left-width: 7px;
+}
+
+/* ── Sidebar Nav Hover (CSS puro) ── */
+.sidebar-nav-item {
+  transition: background 0.15s ease;
+}
+.sidebar-nav-item:hover:not([data-active="true"]) {
+  background: rgba(0, 95, 115, 0.04);
+}
+.sidebar-upgrade-btn {
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.sidebar-upgrade-btn:hover {
+  background: var(--color-accent) !important;
+  color: #fff !important;
+}
+
+/* ── Thumbnail de Foto ── */
+.foto-thumb {
+  height: 120px;
+}
+
+/* ── Disabled Buttons ── */
+button:disabled, a[aria-disabled="true"] {
+  cursor: not-allowed !important;
+  opacity: 0.45;
+  pointer-events: auto;
+}
+button:disabled:active {
+  transform: none;
 }
 
 /* ── Scrollbar Custom ── */

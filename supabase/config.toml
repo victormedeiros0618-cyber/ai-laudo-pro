@@ -1,0 +1,16 @@
+
+[functions.batch-analyze]
+enabled = true
+verify_jwt = true
+import_map = "./functions/batch-analyze/deno.json"
+entrypoint = "./functions/batch-analyze/index.ts"
+
+[functions.gemini-analyze]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/gemini-analyze/index.ts"
+
+[functions.stripe-webhook]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/stripe-webhook/index.ts"

@@ -47,8 +47,11 @@ interface AnalysisResponse {
     nivel_risco_geral: "baixo" | "medio" | "alto" | "critico";
 }
 
+// @ts-expect-error: Variável de ambiente do Supabase
+const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "https://ia-laudo.vercel.app";
+
 const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, x-client-info, apikey",
     "Access-Control-Max-Age": "86400",

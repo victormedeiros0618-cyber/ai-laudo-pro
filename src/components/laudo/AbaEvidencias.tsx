@@ -1,189 +1,216 @@
-import { useState, useRef } from 'react';
-import { Upload, X, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import type { TipoVistoria } from '@/types';
+/**
+ * AbaEvidencias.tsx — CORRIGIDO
+ *
+ * MUDANÇA PRINCIPAL:
+ * Substituído useFotoManager() por useLaudoContext()
+ * As fotos agora são as mesmas que NovoLaudo e AbaRevisao enxergam.
+ *
+ * OUTRAS MUDANÇAS:
+ * - Props simplificadas: removidos `fotos` e `onFotosChange` (não eram usados)
+ * - onProcessed tipado corretamente como RelatorioIA em vez de `any`
+ * - console.log de debug removidos
+ */
 
-interface AbaEvidenciasProps {
-  fotos: string[];
-  onFotosChange: (fotos: string[]) => void;
-  onProcessed: (result: any) => void;
-  tipoLaudo: TipoVistoria;
-  descricao: string;
+import { useState } from 'react';
+import { X, Loader, Play } from 'lucide-react';
+import { FotoUploadB } from './FotoUploadB';
+import { useLaudoContext } from '@/contexts/LaudoContext';
+import { useAnaliseLaudo } from '@/hooks/useAnaliseLaudo';
+import { toast } from 'sonner';
+import type { RelatorioIA, TipoVistoria, AchadoTecnico } from '@/types';
+
+interface EvidenciasTabProps {
+  tipoLaudo: TipoVistoria | string;
+  laudoId?: string;
+  onProcessed?: (result: RelatorioIA) => void;
+  descricao?: string;
 }
 
-export function AbaEvidencias({ fotos, onFotosChange, onProcessed, tipoLaudo, descricao }: AbaEvidenciasProps) {
-  const [dragOver, setDragOver] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFiles = (files: FileList | null) => {
-    if (!files) return;
-    const max = 20 - fotos.length;
-    const newFiles = Array.from(files).slice(0, max);
-    
-    newFiles.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        onFotosChange([...fotos, e.target?.result as string]);
-      };
-      reader.readAsDataURL(file);
-    });
-  };
 
-  const removeFoto = (index: number) => {
-    onFotosChange(fotos.filter((_, i) => i !== index));
-  };
+export function EvidenciasTab({ tipoLaudo, laudoId, onProcessed, descricao }: EvidenciasTabProps) {
+  // FIX: usa o context compartilhado — mesmas fotos de todo o fluxo
+  const {
+    fotos,
+    removerFoto,
+    atualizarAnaliseGemini,
+    atualizarLoading,
+    atualizarErro,
+    fotosComAnalise,
+    fotosSemAnalise,
+    consolidarAnalises,
+  } = useLaudoContext();
 
-  const processarIA = async () => {
-    if (fotos.length === 0) {
-      toast.error('Adicione pelo menos uma foto');
+  const { analisarLote, loading: analisando } = useAnaliseLaudo();
+  const [analisandoAgora, setAnalisandoAgora] = useState(false);
+
+  const handleAnalisarTodas = async () => {
+    const fotosPendentes = fotosSemAnalise();
+
+    if (fotosPendentes.length === 0) {
+      toast.info('Todas as fotos já foram analisadas');
       return;
     }
-    setProcessing(true);
 
-    // Mock IA response
-    setTimeout(() => {
-      const mockResult = {
-        achados: [
-          {
-            ambiente_setor: 'Fachada Principal',
-            titulo_patologia: 'Fissuras verticais em alvenaria',
-            descricao_tecnica: 'Fissuras verticais com abertura de 2-5mm na fachada principal, indicando possível recalque diferencial.',
-            gravidade: 'alto' as const,
-            nota_g: 4, nota_u: 4, nota_t: 3, gut_score: 48,
-            estimativa_custo: 'R$ 15.000 - R$ 25.000',
-            norma_nbr_relacionada: 'NBR 15575:2021',
-            provavel_causa: 'Recalque diferencial de fundação',
-            recomendacao_intervencao: 'Monitoramento com fissuômetros e reforço estrutural',
-          },
-          {
-            ambiente_setor: 'Cobertura',
-            titulo_patologia: 'Infiltração ativa em laje de cobertura',
-            descricao_tecnica: 'Manchas de umidade e eflorescências na face inferior da laje, com desplacamento do revestimento.',
-            gravidade: 'critico' as const,
-            nota_g: 5, nota_u: 5, nota_t: 4, gut_score: 100,
-            estimativa_custo: 'R$ 30.000 - R$ 50.000',
-            norma_nbr_relacionada: 'NBR 9575:2010',
-            provavel_causa: 'Falha no sistema de impermeabilização',
-            recomendacao_intervencao: 'Remoção completa da impermeabilização existente e reaplicação com manta asfáltica',
-          },
-          {
-            ambiente_setor: 'Garagem',
-            titulo_patologia: 'Corrosão de armadura em pilar',
-            descricao_tecnica: 'Exposição e corrosão severa de armaduras em pilar P12 do subsolo, com perda de seção estimada em 15%.',
-            gravidade: 'critico' as const,
-            nota_g: 5, nota_u: 5, nota_t: 5, gut_score: 125,
-            estimativa_custo: 'R$ 8.000 - R$ 12.000',
-            norma_nbr_relacionada: 'NBR 6118:2014',
-            provavel_causa: 'Cobrimento insuficiente e carbonatação do concreto',
-            recomendacao_intervencao: 'Reforço estrutural com adição de chapa metálica ou fibra de carbono',
-          },
-        ],
-        resumo_executivo: 'A edificação apresenta patologias significativas que requerem intervenção imediata, especialmente nas áreas de cobertura e estrutura do subsolo.',
-        nivel_risco_geral: 'critico' as const,
-      };
-      setProcessing(false);
-      toast.success('Análise concluída! 3 patologias identificadas.');
-      onProcessed(mockResult);
-    }, 3000);
+    setAnalisandoAgora(true);
+    toast.dismiss();
+    toast.message(`Analisando ${fotosPendentes.length} foto(s)...`, { id: 'analise-progresso' });
+
+    try {
+      fotosPendentes.forEach((foto) => atualizarLoading(foto.id, true));
+
+      const resultados = await analisarLote(
+        fotosPendentes.map((f) => ({ id: f.id, file: f.file })),
+        tipoLaudo,
+        laudoId,
+        descricao
+      );
+
+      resultados.forEach((analise, fotoId) => {
+        if (analise) {
+          atualizarAnaliseGemini(fotoId, analise);
+        } else {
+          atualizarErro(fotoId, 'Erro na análise desta foto');
+        }
+      });
+
+      toast.dismiss();
+
+      // Consolidar as análises sincronamente para evitar ler estado antigo do React
+      const fotosAtualizadas = fotos.map(f => {
+        const novoDado = resultados.get(f.id);
+        if (novoDado !== undefined) {
+          return { ...f, analiseGemini: novoDado || undefined };
+        }
+        return f;
+      }).filter(f => f.analiseGemini);
+
+      if (fotosAtualizadas.length > 0) {
+        let nivelRiscoGeral: 'baixo' | 'medio' | 'alto' | 'critico' = 'baixo';
+        let resumoGeral = '';
+        const todasAsAnalises: AchadoTecnico[] = [];
+
+        fotosAtualizadas.forEach(foto => {
+            if (!foto.analiseGemini) return;
+            todasAsAnalises.push(...foto.analiseGemini.achados);
+            resumoGeral += `\n${foto.analiseGemini.resumo_executivo}`;
+            
+            const niveis = ['baixo', 'medio', 'alto', 'critico'];
+            const indexAtual = niveis.indexOf(nivelRiscoGeral);
+            const indexNovo = niveis.indexOf(foto.analiseGemini.nivel_risco_geral);
+            if (indexNovo > indexAtual) {
+                nivelRiscoGeral = foto.analiseGemini.nivel_risco_geral;
+            }
+        });
+
+        const analiseConsolidada: RelatorioIA = {
+            achados: todasAsAnalises,
+            resumo_executivo: `Análise consolidada de ${fotosAtualizadas.length} foto(s). Total de ${todasAsAnalises.length} achado(s).${resumoGeral}`,
+            nivel_risco_geral: nivelRiscoGeral,
+        };
+
+        if (onProcessed) {
+          onProcessed(analiseConsolidada);
+        }
+        toast.success(`${todasAsAnalises.length} patologia(s) identificada(s)!`, { id: 'analise-progresso' });
+      } else {
+        toast.error('Nenhuma foto foi analisada com sucesso', { id: 'analise-progresso' });
+      }
+
+    } catch (err) {
+      toast.error('Erro ao analisar fotos', { id: 'analise-progresso' });
+    } finally {
+      setAnalisandoAgora(false);
+    }
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Dropzone */}
-      <div
-        className="rounded-[var(--radius-lg)] p-12 text-center cursor-pointer transition-all"
-        style={{
-          border: `2px dashed ${dragOver ? 'var(--color-focus)' : 'var(--color-accent)'}`,
-          background: dragOver ? 'rgba(0, 229, 255, 0.05)' : 'var(--color-accent-light)',
-          boxShadow: dragOver ? 'var(--shadow-focus)' : 'none',
-        }}
-        onClick={() => inputRef.current?.click()}
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
-      >
-        <Upload size={48} style={{ color: 'var(--color-accent)', margin: '0 auto 12px' }} />
-        <p className="font-display text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-          Arraste as fotos aqui ou clique para selecionar
-        </p>
-        <p className="text-xs mt-1 font-body" style={{ color: 'var(--color-text-muted)' }}>
-          Formatos aceitos: JPG, PNG, HEIC · Máximo 20 fotos
-        </p>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={(e) => handleFiles(e.target.files)}
-        />
-      </div>
+  const fotosAnalisadas = fotosComAnalise();
+  const todasAnalisadas = fotos.length > 0 && fotosAnalisadas.length === fotos.length;
 
-      {/* Gallery */}
+  return (
+    <div className="space-y-4">
+      {/* Upload — FotoUploadB também usa o context internamente */}
+      <FotoUploadB tipoLaudo={tipoLaudo} descricao={descricao} />
+
+      {/* Grid de fotos adicionadas */}
       {fotos.length > 0 && (
-        <div>
-          <p className="text-sm font-display font-medium mb-3" style={{ color: 'var(--color-text-secondary)' }}>
-            {fotos.length} foto{fotos.length !== 1 ? 's' : ''} selecionada{fotos.length !== 1 ? 's' : ''}
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {fotos.map((foto, i) => (
-              <div key={i} className="relative group">
-                <img
-                  src={foto}
-                  alt={`Foto ${i + 1}`}
-                  className="w-full rounded-[var(--radius-md)] object-cover cursor-pointer"
-                  style={{
-                    height: 220,
-                    transition: 'transform var(--transition), box-shadow var(--transition)',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.03)';
-                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,229,255,0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
-                />
-                <span
-                  className="absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-display font-bold text-white"
-                  style={{ background: 'var(--color-primary)' }}
-                >
-                  {i + 1}
-                </span>
-                <button
-                  onClick={(e) => { e.stopPropagation(); removeFoto(i); }}
-                  className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{ background: 'var(--color-danger)' }}
-                >
-                  <X size={12} />
-                </button>
-              </div>
-            ))}
-          </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          {fotos.map((foto) => (
+            <div key={foto.id} className="relative group">
+              <img
+                src={foto.preview}
+                alt={`Evidencia ${foto.id.split('-').pop()}`}
+                loading="lazy"
+                className="w-full rounded-lg object-cover foto-thumb"
+              />
+
+              {/* Overlay de status */}
+              {foto.loading && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50">
+                  <Loader size={20} className="text-white animate-spin" />
+                </div>
+              )}
+
+              {foto.analiseGemini && !foto.loading && (
+                <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded text-xs font-bold bg-green-500 text-white">
+                  ✓ {foto.analiseGemini.achados.length} achados
+                </div>
+              )}
+
+              {foto.error && (
+                <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded text-xs font-bold bg-red-500 text-white">
+                  Erro
+                </div>
+              )}
+
+              {/* Botão remover */}
+              <button
+                onClick={() => removerFoto(foto.id)}
+                title="Remover foto"
+                aria-label="Remover foto"
+                className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Process button */}
-      <button
-        onClick={processarIA}
-        disabled={processing || fotos.length === 0}
-        className="w-full py-3 rounded-[var(--radius-sm)] font-display font-semibold text-white text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
-        style={{ background: processing ? 'var(--color-primary-dark)' : 'var(--color-primary)' }}
-      >
-        {processing ? (
-          <>
-            <Loader2 size={18} className="animate-spin" />
-            Analisando {fotos.length} foto(s). Identificando patologias...
-          </>
-        ) : (
-          <>
-            <span>✨</span>
-            Processar Vistoria com IA
-          </>
-        )}
-      </button>
+      {/* Rodapé de ações */}
+      {fotos.length > 0 && (
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+            {fotosAnalisadas.length}/{fotos.length} fotos analisadas
+          </p>
+
+          <button
+            onClick={handleAnalisarTodas}
+            disabled={analisandoAgora || analisando || todasAnalisadas}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm text-black disabled:opacity-50 transition-colors"
+            style={{ background: 'var(--color-primary)' }}
+          >
+            {analisandoAgora || analisando ? (
+              <>
+                <Loader size={14} className="animate-spin" />
+                Analisando...
+              </>
+            ) : todasAnalisadas ? (
+              '✓ Todas analisadas'
+            ) : (
+              <>
+                <Play size={14} />
+                Analisar Todas
+              </>
+            )}
+          </button>
+        </div>
+      )}
+      {fotos.length > 0 && fotosAnalisadas.length === 0 && !analisandoAgora && (
+        <p className="text-xs text-center opacity-70 mt-2">
+          Clique em &quot;Analisar Todas&quot; para processar as fotos com IA antes de avançar.
+        </p>
+      )}
     </div>
   );
 }

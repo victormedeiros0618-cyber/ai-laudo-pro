@@ -1,13 +1,28 @@
+import { useEffect } from 'react';
+import { useSubscriptions } from '@/hooks/useSubscriptions';
+import { useAuth } from '@/hooks/useAuth';
+
 export function PlanWidget() {
-  // Mock data - will be replaced with useSubscription hook
-  const usagePercent = 40;
-  const planLabel = 'Gratuito';
-  const laudosUsed = 0;
-  const laudosLimit = 2;
+  const { user } = useAuth();
+  const { subscription, carregarSubscription, obterPlanoAtual, obterProgressoLaudos } = useSubscriptions();
+
+  useEffect(() => {
+    if (user && !subscription) {
+      carregarSubscription();
+    }
+  }, [user, subscription, carregarSubscription]);
+
+  const plano = obterPlanoAtual();
+  const progresso = obterProgressoLaudos();
+
+  const planLabel = plano?.nome || 'Gratuito';
+  const laudosUsed = progresso?.usado ?? 0;
+  const laudosLimit = progresso?.limite ?? 2;
+  const usagePercent = progresso?.percentual ?? 0;
 
   const radius = 28;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference * (1 - usagePercent / 100);
+  const strokeDashoffset = circumference * (1 - Math.min(usagePercent, 100) / 100);
 
   const strokeColor = usagePercent >= 90 ? 'var(--color-danger)'
     : usagePercent >= 70 ? 'var(--color-warning)'
@@ -15,7 +30,7 @@ export function PlanWidget() {
 
   return (
     <div className="flex items-center gap-3">
-      <svg width="64" height="64" viewBox="0 0 64 64">
+      <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
         <circle
           cx="32" cy="32" r={radius}
           fill="none"
@@ -40,7 +55,7 @@ export function PlanWidget() {
           className="font-display"
           style={{ fontSize: '12px', fontWeight: 700, fill: 'var(--color-text-primary)' }}
         >
-          {usagePercent}%
+          {Math.round(usagePercent)}%
         </text>
       </svg>
       <div>

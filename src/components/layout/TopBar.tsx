@@ -1,6 +1,8 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Menu, LogOut, User } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface TopBarProps {
   onMenuClick: () => void;
@@ -17,7 +19,9 @@ const BREADCRUMB_MAP: Record<string, string> = {
 export function TopBar({ onMenuClick }: TopBarProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const breadcrumb = BREADCRUMB_MAP[location.pathname] || 'Painel';
@@ -32,8 +36,22 @@ export function TopBar({ onMenuClick }: TopBarProps) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleLogout = () => {
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      console.log('🔵 TopBar: Logout clicado');
+      setIsLoggingOut(true);
+      setPopoverOpen(false);
+
+      // Chamar signOut do useAuth (que faz o logout no Supabase)
+      await signOut();
+
+      console.log('🟢 TopBar: Logout sucesso');
+      toast.success('Logout realizado com sucesso!');
+    } catch (error) {
+      console.error('🔴 TopBar: Erro no logout:', error);
+      toast.error('Erro ao fazer logout');
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -46,7 +64,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
       }}
     >
       <div className="flex items-center gap-3">
-        <button onClick={onMenuClick} className="lg:hidden p-2 rounded-md" style={{ color: 'var(--color-text-secondary)' }}>
+        <button onClick={onMenuClick} title="Abrir menu" aria-label="Abrir menu" className="lg:hidden p-2 rounded-md" style={{ color: 'var(--color-text-secondary)' }}>
           <Menu size={20} />
         </button>
         <span className="font-display text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
@@ -87,10 +105,11 @@ export function TopBar({ onMenuClick }: TopBarProps) {
             </button>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-4 py-2 text-sm font-body hover:bg-gray-50"
+              disabled={isLoggingOut}
+              className="w-full flex items-center gap-2 px-4 py-2 text-sm font-body hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ color: 'var(--color-danger)' }}
             >
-              <LogOut size={14} /> Sair
+              <LogOut size={14} /> {isLoggingOut ? 'Saindo...' : 'Sair'}
             </button>
           </div>
         )}
