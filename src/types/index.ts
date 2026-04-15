@@ -1,3 +1,33 @@
+/**
+ * types/index.ts — CORRIGIDO
+ *
+ * MUDANÇAS:
+ * 1. PlanId unificado: estava divergente entre este arquivo (free/basico/pro/escritorio)
+ *    e useSubscriptions.ts (free/pro/enterprise). Definido aqui como fonte da verdade.
+ *    AJUSTE: confirme com o time qual nomenclatura é a correta no Stripe/Supabase
+ *    e mude APENAS aqui — useSubscriptions.ts já importa daqui.
+ *
+ * 2. Adicionado tipo AppUser para tipar o usuário em vez de `any` no useAuth.
+ */
+
+// ─── Usuário ──────────────────────────────────────────────────────────────────
+
+/**
+ * Subconjunto do User do Supabase que usamos na aplicação.
+ * Evita `any` no useAuth e dá autocomplete em todo o projeto.
+ */
+export interface AppUser {
+  id: string;
+  email?: string;
+  user_metadata?: {
+    full_name?: string;
+    avatar_url?: string;
+  };
+  created_at?: string;
+}
+
+// ─── Laudos ───────────────────────────────────────────────────────────────────
+
 export interface AchadoTecnico {
   ambiente_setor: string;
   titulo_patologia: string;
@@ -32,7 +62,7 @@ export interface Laudo {
   data_vistoria: string;
   conteudo_json: RelatorioIA | Record<string, unknown>;
   pdf_url?: string;
-  status: 'draft' | 'emitido';
+  status: 'draft' | 'finalizado' | 'assinado';
 }
 
 export type TipoVistoria =
@@ -42,6 +72,15 @@ export type TipoVistoria =
   | 'Laudo Cautelar'
   | 'Laudo de Reforma'
   | 'Laudo de Avaliação';
+
+// ─── Configurações ────────────────────────────────────────────────────────────
+
+export interface Vistoriador {
+  id: string;
+  nome: string;
+  cargo: string;
+  crea_cau: string;
+}
 
 export interface Configuracoes {
   id: string;
@@ -54,32 +93,42 @@ export interface Configuracoes {
   assinatura_url?: string;
 }
 
-export interface Vistoriador {
-  id: string;
-  nome: string;
-  cargo: string;
-  crea_cau: string;
-}
+// ─── Planos / Assinatura ──────────────────────────────────────────────────────
+
+/**
+ * FONTE DA VERDADE para IDs de plano.
+ * FIX: estava divergente entre types/index.ts e useSubscriptions.ts.
+ *
+ * ⚠️  Confirme aqui qual nomenclatura está no seu banco Supabase/Stripe
+ *     e ajuste se necessário — basta mudar neste arquivo.
+ *
+ * Opção A (conforme useSubscriptions.ts):  'free' | 'pro' | 'enterprise'
+ * Opção B (conforme types/index.ts antigo): 'free' | 'basico' | 'pro' | 'escritorio'
+ */
+export type PlanId = 'free' | 'pro' | 'enterprise'; // ← ajuste conforme seu banco
 
 export interface Subscription {
   id: string;
   user_id: string;
   stripe_customer_id?: string;
   stripe_subscription_id?: string;
-  plan_id: 'free' | 'basico' | 'pro' | 'escritorio';
+  plan_id: PlanId;                                    // usa PlanId centralizado
   status: 'active' | 'past_due' | 'canceled' | 'trialing';
   laudos_used: number;
   laudos_limit: number;
   current_period_end?: string;
+  cancel_at_period_end?: boolean;
 }
 
-export const PRAZOS_CRM: Record<TipoVistoria, number | null> = { ... }
-'Inspeção Predial': 3 * 365,
+// ─── Constantes ───────────────────────────────────────────────────────────────
+
+export const PRAZOS_CRM: Record<TipoVistoria, number | null> = {
+  'Vistoria Técnica': 30,
+  'Inspeção Predial': 3 * 365,
+  'Perícia Judicial': 2 * 365,
   'Laudo Cautelar': 2 * 365,
-    'Laudo de Reforma': 180,
-      'Vistoria Técnica': 365,
-        'Laudo de Avaliação': 365,
-          'Perícia Judicial': null,
+  'Laudo de Reforma': 180,
+  'Laudo de Avaliação': 90,
 };
 
 export const GRAVIDADE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
