@@ -11,7 +11,7 @@
  */
 
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, FileText, CheckCircle, X, PenLine, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronRight, FileText, CheckCircle, X, PenLine, AlertCircle, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import type { AchadoTecnico, RelatorioIA } from '@/types';
 import { GRAVIDADE_COLORS } from '@/types';
@@ -87,16 +87,25 @@ export function AbaRevisao({ iaResult, fotos, formData, onFinalize, onCancel }: 
     <div className="space-y-6">
       {/* AI Summary */}
       <div
-        className="rounded-[var(--radius-md)] p-5"
+        className="relative rounded-[var(--radius-md)] p-5 overflow-hidden"
         style={{
           background: 'var(--color-surface)',
           boxShadow: 'var(--shadow-card)',
           borderLeft: `5px solid ${riscoColor.border}`,
         }}
       >
-        <div className="flex items-center justify-between mb-2">
+        {/* Glow sutil no topo direito — acento IA */}
+        <div
+          aria-hidden
+          className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none opacity-40"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(0, 212, 255, 0.35), transparent 70%)',
+          }}
+        />
+        <div className="relative flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <span className="text-lg">✨</span>
+            <Sparkles size={16} style={{ color: 'var(--color-neon-dim)' }} />
             <span className="font-display text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
               Gemini 2.5 Flash
             </span>
@@ -151,7 +160,7 @@ export function AbaRevisao({ iaResult, fotos, formData, onFinalize, onCancel }: 
                 type="button"
                 onClick={() => setExpandedAchado(isExpanded ? null : index)}
                 aria-expanded={isExpanded ? 'true' : 'false'}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-zinc-50 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:brightness-[0.97] dark:hover:brightness-110"
               >
                 <span
                   className="px-2 py-0.5 rounded text-xs font-display font-bold"
@@ -277,8 +286,8 @@ export function AbaRevisao({ iaResult, fotos, formData, onFinalize, onCancel }: 
       <div
         className="flex items-center gap-3 p-3 rounded-[var(--radius-sm)]"
         style={{
-          background: assinaturaDigital ? '#EAFAF1' : 'var(--color-bg)',
-          border: `1px solid ${assinaturaDigital ? '#1A7340' : 'var(--color-border)'}`,
+          background: assinaturaDigital ? 'var(--color-success-light)' : 'var(--color-surface-alt)',
+          border: `1px solid ${assinaturaDigital ? 'var(--color-success)' : 'var(--color-border)'}`,
         }}
       >
         {assinaturaLoading ? (
@@ -287,9 +296,9 @@ export function AbaRevisao({ iaResult, fotos, formData, onFinalize, onCancel }: 
           </span>
         ) : assinaturaDigital ? (
           <>
-            <PenLine size={16} style={{ color: '#1A7340', flexShrink: 0 }} />
+            <PenLine size={16} style={{ color: 'var(--color-success)', flexShrink: 0 }} />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-display font-semibold" style={{ color: '#1A7340' }}>
+              <p className="text-xs font-display font-semibold" style={{ color: 'var(--color-success)' }}>
                 Assinatura digital configurada
               </p>
               <p className="text-xs font-body truncate" style={{ color: 'var(--color-text-muted)' }}>
@@ -328,8 +337,8 @@ export function AbaRevisao({ iaResult, fotos, formData, onFinalize, onCancel }: 
           <button
             type="button"
             onClick={onFinalize}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[var(--radius-sm)] font-display font-semibold text-sm text-white transition-colors"
-            style={{ background: '#1A7340' }}
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[var(--radius-sm)] font-display font-semibold text-sm text-white transition-all hover:brightness-110"
+            style={{ background: 'var(--color-success)', boxShadow: 'var(--shadow-card)' }}
           >
             <CheckCircle size={16} />
             Finalizar Laudo

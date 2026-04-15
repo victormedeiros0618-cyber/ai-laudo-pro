@@ -11,7 +11,30 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 // @ts-expect-error - Variável de ambiente do Supabase
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
 // @ts-expect-error - Variável de ambiente do Supabase
-const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') ?? 'https://ai-laudo-pro.vercel.app';
+const ALLOWED_ORIGIN_ENV = Deno.env.get('ALLOWED_ORIGIN') ?? 'https://ai-laudo-pro.vercel.app';
+
+// Allowlist de origens (prod + dev local)
+const ALLOWED_ORIGINS = new Set<string>([
+  ...ALLOWED_ORIGIN_ENV.split(',').map((o) => o.trim()).filter(Boolean),
+  'http://localhost:8080',
+  'http://localhost:5173',
+  'http://127.0.0.1:8080',
+  'http://127.0.0.1:5173',
+]);
+
+function buildCorsHeaders(origin: string | null): Record<string, string> {
+  const allow = origin && ALLOWED_ORIGINS.has(origin)
+    ? origin
+    : ALLOWED_ORIGIN_ENV.split(',')[0].trim();
+
+  return {
+    'Access-Control-Allow-Origin': allow,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, apikey',
+    'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin',
+  };
+}
 
 // Máximo de chamadas paralelas ao gemini-analyze para evitar rate limit
 const MAX_CONCURRENCY = 3;
@@ -55,12 +78,6 @@ interface FotoResultado {
   erro?: string;
 }
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, apikey',
-  'Access-Control-Max-Age': '86400',
-};
 
 /**
  * Chama gemini-analyze para uma única foto.
@@ -131,6 +148,8 @@ async function processarComConcorrencia<T>(
 
 // @ts-expect-error - Request type do Deno
 Deno.serve(async (req: Request): Promise<Response> => {
+  const corsHeaders = buildCorsHeaders(req.headers.get('origin'));
+
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   if (req.method !== 'POST') {

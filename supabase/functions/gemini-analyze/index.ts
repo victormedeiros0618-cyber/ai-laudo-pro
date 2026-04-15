@@ -48,14 +48,32 @@ interface AnalysisResponse {
 }
 
 // @ts-expect-error: Variável de ambiente do Supabase
-const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "https://ia-laudo.vercel.app";
+const ALLOWED_ORIGIN_ENV = (Deno.env.get("ALLOWED_ORIGIN") || "https://ia-laudo.vercel.app").trim();
 
-const corsHeaders = {
-    "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, x-client-info, apikey",
-    "Access-Control-Max-Age": "86400",
-};
+// Suporta múltiplas origens separadas por vírgula.
+// Adiciona automaticamente os padrões locais de dev para evitar dor no desenvolvimento.
+const ALLOWED_ORIGINS = new Set<string>([
+    ...ALLOWED_ORIGIN_ENV.split(",").map((o) => o.trim()).filter(Boolean),
+    "http://localhost:8080",
+    "http://localhost:5173",
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1:5173",
+]);
+
+function buildCorsHeaders(origin: string | null): Record<string, string> {
+    // Ecoa a origem quando ela estiver na allowlist; caso contrário usa o default configurado.
+    const allow = origin && ALLOWED_ORIGINS.has(origin)
+        ? origin
+        : ALLOWED_ORIGIN_ENV.split(",")[0].trim();
+
+    return {
+        "Access-Control-Allow-Origin": allow,
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, x-client-info, apikey",
+        "Access-Control-Max-Age": "86400",
+        "Vary": "Origin",
+    };
+}
 
 async function logIAEvent(data: {
     user_id?: string;
@@ -100,6 +118,9 @@ function extractJSON(text: string): string {
 
 // @ts-expect-error: Request type do Deno
 Deno.serve(async (req: Request): Promise<Response> => {
+    // CORS headers são calculados por-request para suportar múltiplas origens (prod + dev local)
+    const corsHeaders = buildCorsHeaders(req.headers.get("origin"));
+
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
     }

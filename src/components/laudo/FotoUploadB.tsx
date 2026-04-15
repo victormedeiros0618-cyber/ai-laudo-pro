@@ -1,12 +1,15 @@
 /**
- * FotoUploadB.tsx — CORRIGIDO
+ * FotoUploadB.tsx — Redesign VistorIA (Fase C.2)
  *
- * MUDANÇA: usa useLaudoContext() em vez de useFotoManager()
- * Agora as fotos adicionadas aqui aparecem em AbaEvidencias e AbaRevisao.
+ * MUDANÇAS VISUAIS:
+ * - Remove cores hardcoded (#D4AF37, zinc-*, yellow-50) → tokens CSS
+ * - dragActive aplica borda neon pulsante (classe .border-neon-pulse)
+ * - Ícone Upload com glow dourado
+ * - Totalmente compatível light + dark mode
  */
 
 import { useRef, useState } from 'react';
-import { Upload } from 'lucide-react';
+import { Upload, ImagePlus } from 'lucide-react';
 import { useLaudoContext } from '@/contexts/LaudoContext';
 import { toast } from 'sonner';
 
@@ -19,7 +22,6 @@ export function FotoUploadB({ tipoLaudo: _tipoLaudo, descricao: _descricao }: Fo
     const inputRef = useRef<HTMLInputElement>(null);
     const [dragActive, setDragActive] = useState(false);
 
-    // FIX: usa context compartilhado
     const { adicionarFoto } = useLaudoContext();
 
     const processarArquivo = (file: File) => {
@@ -67,11 +69,18 @@ export function FotoUploadB({ tipoLaudo: _tipoLaudo, descricao: _descricao }: Fo
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
-            className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${dragActive
-                ? 'border-[#D4AF37] bg-yellow-50'
-                : 'border-zinc-300 bg-zinc-50 hover:border-[#D4AF37]'
-                }`}
             onClick={() => inputRef.current?.click()}
+            className={`relative border-2 border-dashed rounded-[var(--radius-md)] p-10 text-center transition-all cursor-pointer overflow-hidden ${
+                dragActive ? 'border-neon-pulse' : ''
+            }`}
+            style={{
+                background: dragActive
+                    ? 'var(--color-primary-light)'
+                    : 'var(--color-surface-alt)',
+                borderColor: dragActive
+                    ? 'var(--color-neon)'
+                    : 'var(--color-border-dark)',
+            }}
         >
             <input
                 ref={inputRef}
@@ -83,12 +92,48 @@ export function FotoUploadB({ tipoLaudo: _tipoLaudo, descricao: _descricao }: Fo
                 aria-label="Selecionar fotos de evidência"
                 className="hidden"
             />
-            <div className="flex flex-col items-center gap-2 pointer-events-none">
-                <Upload size={32} className="text-[#D4AF37]" />
-                <p className="text-sm font-semibold text-zinc-900">
-                    Arraste fotos aqui ou clique para selecionar
-                </p>
-                <p className="text-xs text-zinc-500">JPG, PNG, WebP — máx 10MB cada</p>
+
+            {/* Grid técnico sutil no fundo */}
+            <div
+                aria-hidden
+                className="absolute inset-0 bg-tech-grid opacity-40 pointer-events-none"
+            />
+
+            <div className="relative flex flex-col items-center gap-3 pointer-events-none">
+                <div
+                    className="relative w-14 h-14 rounded-full flex items-center justify-center transition-all"
+                    style={{
+                        background: dragActive
+                            ? 'var(--color-neon)'
+                            : 'var(--color-accent-light)',
+                        boxShadow: dragActive
+                            ? '0 0 24px rgba(0, 212, 255, 0.6)'
+                            : 'var(--shadow-gold)',
+                    }}
+                >
+                    {dragActive ? (
+                        <ImagePlus size={26} style={{ color: '#0A1020' }} strokeWidth={2.5} />
+                    ) : (
+                        <Upload size={26} style={{ color: 'var(--color-accent)' }} strokeWidth={2.2} />
+                    )}
+                </div>
+
+                <div className="space-y-1">
+                    <p
+                        className="text-sm font-display font-semibold"
+                        style={{ color: 'var(--color-text-primary)' }}
+                    >
+                        {dragActive
+                            ? 'Solte as imagens aqui'
+                            : 'Arraste fotos aqui ou clique para selecionar'}
+                    </p>
+                    <p
+                        className="text-xs font-body"
+                        style={{ color: 'var(--color-text-muted)' }}
+                    >
+                        JPG, PNG, WebP — máx 10MB cada
+                    </p>
+                </div>
             </div>
         </div>
     );
