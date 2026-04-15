@@ -39,7 +39,8 @@ export function Sidebar({ onClose }: SidebarProps) {
   const location = useLocation();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
-  const isActive = (path: string) => location.pathname === path || location.pathname + location.search === path;
+  const isActive = (path: string) =>
+    location.pathname === path || location.pathname + location.search === path;
 
   const toggleAccordion = (label: string) => {
     setActiveMenu((prev) => (prev === label ? null : label));
@@ -47,18 +48,14 @@ export function Sidebar({ onClose }: SidebarProps) {
 
   return (
     <div
-      className="h-full flex flex-col"
-      style={{
-        background: 'var(--color-surface)',
-        borderRight: 'var(--sidebar-border)',
-        width: 'var(--sidebar-width)',
-      }}
+      className="h-full flex flex-col bg-surface border-r border-border"
+      style={{ width: 'var(--sidebar-width)' }}
     >
       {/* Logo */}
-      <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--color-border)' }}>
+      <div className="px-5 py-4 flex items-center justify-between border-b border-border">
         <button
           type="button"
-          onClick={() => navigate('/dashboard')}
+          onClick={() => { navigate('/dashboard'); onClose(); }}
           className="flex flex-col items-start gap-0.5 transition-opacity hover:opacity-80"
           aria-label="VistorIA — Ir para o dashboard"
         >
@@ -67,15 +64,14 @@ export function Sidebar({ onClose }: SidebarProps) {
             textColor="var(--color-primary)"
             accentColor="var(--color-accent)"
           />
-          <p className="text-[10px] tracking-widest uppercase" style={{ color: 'var(--color-text-muted)' }}>
+          <p className="text-[10px] tracking-widest uppercase text-text-muted">
             Laudos Inteligentes
           </p>
         </button>
         <button
           type="button"
           onClick={onClose}
-          className="lg:hidden p-1 rounded"
-          style={{ color: 'var(--color-text-muted)' }}
+          className="lg:hidden p-1 rounded text-text-muted hover:text-text-primary transition-colors"
           aria-label="Fechar menu"
         >
           <X size={18} />
@@ -90,23 +86,28 @@ export function Sidebar({ onClose }: SidebarProps) {
           const isExpanded = activeMenu === item.label;
 
           if (!hasChildren) {
+            const active = isActive(item.path!);
             return (
               <button
                 type="button"
                 key={item.label}
-                onClick={() => {
-                  navigate(item.path!);
-                  onClose();
-                }}
-                data-active={isActive(item.path!) || undefined}
-                className="sidebar-nav-item w-full flex items-center gap-3 px-5 py-2.5 text-sm font-body"
-                style={{
-                  background: isActive(item.path!) ? 'var(--color-primary-light)' : 'transparent',
-                  color: isActive(item.path!) ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-                  borderLeft: isActive(item.path!) ? '3px solid var(--color-primary)' : '3px solid transparent',
-                }}
+                onClick={() => { navigate(item.path!); onClose(); }}
+                data-active={active || undefined}
+                className={`
+                  sidebar-nav-item relative w-full flex items-center gap-3 px-5 py-2.5 text-sm font-medium
+                  ${active
+                    ? 'text-primary bg-primary/10 dark:text-[#00D4FF] dark:bg-[#00D4FF]/10'
+                    : 'text-text-secondary hover:text-primary dark:hover:text-[#00D4FF]'}
+                `}
               >
-                {Icon && <Icon size={18} />}
+                {/* Barra neon lateral no item ativo */}
+                {active && (
+                  <span
+                    aria-hidden
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-7 rounded-r-full bg-primary dark:bg-[#00D4FF] dark:shadow-neon"
+                  />
+                )}
+                {Icon && <Icon size={18} strokeWidth={active ? 2.5 : 2} />}
                 <span>{item.label}</span>
               </button>
             );
@@ -118,33 +119,33 @@ export function Sidebar({ onClose }: SidebarProps) {
                 type="button"
                 onClick={() => toggleAccordion(item.label)}
                 aria-expanded={isExpanded ? 'true' : 'false'}
-                className="sidebar-nav-item w-full flex items-center gap-3 px-5 py-2.5 text-sm font-body"
-                style={{ color: 'var(--color-text-secondary)' }}
+                className="sidebar-nav-item w-full flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-text-secondary hover:text-primary dark:hover:text-[#00D4FF]"
               >
                 {Icon && <Icon size={18} />}
                 <span className="flex-1 text-left">{item.label}</span>
                 {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               </button>
               {isExpanded && (
-                <div className="ml-10 border-l" style={{ borderColor: 'var(--color-border)' }}>
-                  {item.children!.map((child) => (
-                    <button
-                      type="button"
-                      key={child.path}
-                      onClick={() => {
-                        navigate(child.path);
-                        onClose();
-                      }}
-                      data-active={isActive(child.path) || undefined}
-                      className="sidebar-nav-item w-full text-left px-4 py-2 text-xs font-body"
-                      style={{
-                        color: isActive(child.path) ? 'var(--color-primary)' : 'var(--color-text-muted)',
-                        background: isActive(child.path) ? 'var(--color-primary-light)' : 'transparent',
-                      }}
-                    >
-                      {child.label}
-                    </button>
-                  ))}
+                <div className="ml-10 border-l border-border">
+                  {item.children!.map((child) => {
+                    const active = isActive(child.path);
+                    return (
+                      <button
+                        type="button"
+                        key={child.path}
+                        onClick={() => { navigate(child.path); onClose(); }}
+                        data-active={active || undefined}
+                        className={`
+                          sidebar-nav-item w-full text-left px-4 py-2 text-xs font-medium
+                          ${active
+                            ? 'text-primary bg-primary/10 dark:text-[#00D4FF] dark:bg-[#00D4FF]/10'
+                            : 'text-text-muted hover:text-primary dark:hover:text-[#00D4FF]'}
+                        `}
+                      >
+                        {child.label}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -153,16 +154,12 @@ export function Sidebar({ onClose }: SidebarProps) {
       </nav>
 
       {/* Plan widget + upgrade */}
-      <div className="p-4" style={{ borderTop: '1px solid var(--color-border)' }}>
+      <div className="p-4 border-t border-border">
         <PlanWidget />
         <button
           type="button"
-          onClick={() => navigate('/planos')}
-          className="sidebar-upgrade-btn w-full mt-3 flex items-center justify-center gap-2 py-2 rounded-md text-xs font-display font-semibold"
-          style={{
-            color: 'var(--color-accent-dark)',
-            background: 'var(--color-accent-light)',
-          }}
+          onClick={() => { navigate('/planos'); onClose(); }}
+          className="sidebar-upgrade-btn w-full mt-3 flex items-center justify-center gap-2 py-2 rounded-md text-xs font-semibold bg-accent/10 text-accent-dark hover:bg-accent hover:text-[#0B0F1A] hover:shadow-gold transition-all"
         >
           <Award size={14} />
           Fazer Upgrade

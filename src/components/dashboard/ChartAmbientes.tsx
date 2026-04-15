@@ -1,14 +1,47 @@
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useTheme } from 'next-themes';
+import { Building2 } from 'lucide-react';
 import type { AchadoTecnico } from '@/types';
 
-const COLORS = ['#005f73', '#D4AF37', '#0a9396', '#94d2bd', '#e9d8a6', '#ae2012', '#bb3e03', '#ca6702'];
+/**
+ * ChartAmbientes — Donut chart de distribuição de achados por ambiente.
+ *
+ * Paleta adaptativa:
+ *   - Light: tons de azul/dourado VistorIA + contrastes
+ *   - Dark:  paleta com neon + azul escurecido para manter contraste no preto
+ */
+
+const COLORS_LIGHT = [
+  '#1E3A8A', // Azul primário
+  '#DAA520', // Dourado
+  '#3B82F6', // Azul claro
+  '#F59E0B', // Âmbar
+  '#10B981', // Verde
+  '#DC2626', // Vermelho
+  '#8B5CF6', // Roxo
+  '#0891B2', // Ciano
+];
+
+const COLORS_DARK = [
+  '#00D4FF', // Neon
+  '#F4C430', // Dourado vivo
+  '#60A5FA', // Azul claro
+  '#FBBF24', // Âmbar claro
+  '#34D399', // Verde claro
+  '#F87171', // Vermelho claro
+  '#A78BFA', // Roxo claro
+  '#22D3EE', // Ciano
+];
 
 interface Props {
   achados: AchadoTecnico[];
 }
 
 export function ChartAmbientes({ achados }: Props) {
-  // Agrupar achados por ambiente_setor
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  const COLORS = isDark ? COLORS_DARK : COLORS_LIGHT;
+
   const contagem = achados.reduce<Record<string, number>>((acc, a) => {
     const setor = a.ambiente_setor || 'Não identificado';
     acc[setor] = (acc[setor] || 0) + 1;
@@ -18,24 +51,21 @@ export function ChartAmbientes({ achados }: Props) {
   const data = Object.entries(contagem)
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value)
-    .slice(0, 8); // Top 8 setores
+    .slice(0, 8);
 
   const vazio = data.length === 0;
 
   return (
-    <div
-      className="rounded-[var(--radius-md)] p-5"
-      style={{ background: 'var(--color-surface)', boxShadow: 'var(--shadow-card)' }}
-    >
-      <h3 className="font-display text-sm font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
-        Distribuicao por Ambiente/Setor
+    <div className="rounded-xl p-5 bg-surface border border-border shadow-card transition-shadow hover:shadow-lg">
+      <h3 className="font-display text-sm font-bold mb-4 text-text-primary flex items-center gap-2">
+        <Building2 className="h-4 w-4 text-primary dark:text-[#00D4FF]" />
+        Distribuição por Ambiente
       </h3>
 
       {vazio ? (
-        <div className="flex items-center justify-center" style={{ height: 260 }}>
-          <p className="text-sm font-body" style={{ color: 'var(--color-text-muted)' }}>
-            Nenhum achado registrado ainda
-          </p>
+        <div className="flex flex-col items-center justify-center gap-2 h-[260px]">
+          <Building2 className="h-10 w-10 text-text-disabled" strokeWidth={1.5} />
+          <p className="text-sm text-text-muted">Nenhum achado registrado ainda</p>
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={260}>
@@ -47,7 +77,8 @@ export function ChartAmbientes({ achados }: Props) {
               innerRadius={55}
               outerRadius={85}
               dataKey="value"
-              stroke="none"
+              stroke={isDark ? '#151B2E' : '#FFFFFF'}
+              strokeWidth={2}
             >
               {data.map((_, index) => (
                 <Cell key={index} fill={COLORS[index % COLORS.length]} />
@@ -60,12 +91,18 @@ export function ChartAmbientes({ achados }: Props) {
                 borderRadius: 'var(--radius-sm)',
                 fontSize: '12px',
                 fontFamily: 'var(--font-body)',
+                color: 'var(--color-text-primary)',
               }}
+              itemStyle={{ color: 'var(--color-text-primary)' }}
             />
             <Legend
               verticalAlign="bottom"
               iconSize={8}
-              wrapperStyle={{ fontSize: '11px', fontFamily: 'var(--font-body)' }}
+              wrapperStyle={{
+                fontSize: '11px',
+                fontFamily: 'var(--font-body)',
+                color: 'var(--color-text-secondary)',
+              }}
             />
           </PieChart>
         </ResponsiveContainer>

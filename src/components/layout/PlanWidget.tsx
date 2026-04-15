@@ -1,10 +1,20 @@
 import { useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useAuth } from '@/hooks/useAuth';
+
+/**
+ * PlanWidget — Indicador de plano e consumo de laudos.
+ *
+ * Anel circular com gradiente (primário → neon no dark / primário → accent no light).
+ * Cores mudam conforme percentual: >90% danger, >70% warning.
+ */
 
 export function PlanWidget() {
   const { user } = useAuth();
   const { subscription, carregarSubscription, obterPlanoAtual, obterProgressoLaudos } = useSubscriptions();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
 
   useEffect(() => {
     if (user && !subscription) {
@@ -24,21 +34,45 @@ export function PlanWidget() {
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference * (1 - Math.min(usagePercent, 100) / 100);
 
-  const strokeColor = usagePercent >= 90 ? 'var(--color-danger)'
-    : usagePercent >= 70 ? 'var(--color-warning)'
-    : 'var(--color-primary)';
+  // Cor dinâmica do ring
+  const strokeColor =
+    usagePercent >= 90 ? 'url(#progress-danger)'
+    : usagePercent >= 70 ? 'url(#progress-warning)'
+    : 'url(#progress-primary)';
 
   return (
     <div className="flex items-center gap-3">
       <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="progress-primary" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={isDark ? '#3B5BDB' : '#1E3A8A'} />
+            <stop offset="100%" stopColor={isDark ? '#00D4FF' : '#3B82F6'} />
+          </linearGradient>
+          <linearGradient id="progress-warning" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#F59E0B" />
+            <stop offset="100%" stopColor="#FBBF24" />
+          </linearGradient>
+          <linearGradient id="progress-danger" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#DC2626" />
+            <stop offset="100%" stopColor="#F87171" />
+          </linearGradient>
+        </defs>
+
+        {/* Track (fundo) */}
         <circle
-          cx="32" cy="32" r={radius}
+          cx="32"
+          cy="32"
+          r={radius}
           fill="none"
           stroke="var(--color-border)"
           strokeWidth="5"
         />
+
+        {/* Progresso */}
         <circle
-          cx="32" cy="32" r={radius}
+          cx="32"
+          cy="32"
+          r={radius}
           fill="none"
           stroke={strokeColor}
           strokeWidth="5"
@@ -46,10 +80,12 @@ export function PlanWidget() {
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
           transform="rotate(-90 32 32)"
-          style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+          style={{ transition: 'stroke-dashoffset 0.6s ease' }}
         />
+
         <text
-          x="32" y="32"
+          x="32"
+          y="32"
           textAnchor="middle"
           dominantBaseline="central"
           className="font-display"
@@ -58,11 +94,12 @@ export function PlanWidget() {
           {Math.round(usagePercent)}%
         </text>
       </svg>
-      <div>
-        <p className="font-display text-xs font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+
+      <div className="min-w-0">
+        <p className="font-display text-sm font-bold text-text-primary truncate">
           {planLabel}
         </p>
-        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+        <p className="text-xs text-text-muted">
           {laudosUsed} de {laudosLimit} laudos
         </p>
       </div>
