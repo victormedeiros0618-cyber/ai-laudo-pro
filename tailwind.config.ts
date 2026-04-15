@@ -15,8 +15,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['DM Sans', 'Plus Jakarta Sans', 'sans-serif'],
-        body: ['IBM Plex Sans', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['Inter', 'system-ui', 'sans-serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -36,6 +37,10 @@ export default {
           dark: "var(--color-accent-dark)",
           light: "var(--color-accent-light)",
           foreground: "hsl(var(--accent-foreground))",
+        },
+        neon: {
+          DEFAULT: "var(--color-neon)",
+          dim: "var(--color-neon-dim)",
         },
         danger: {
           DEFAULT: "var(--color-danger)",
@@ -92,6 +97,7 @@ export default {
         xl: "var(--shadow-xl)",
         card: "var(--shadow-card)",
         gold: "var(--shadow-gold)",
+        neon: "var(--shadow-neon)",
         focus: "var(--shadow-focus)",
       },
       borderRadius: {
@@ -115,11 +121,26 @@ export default {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.5" },
         },
+        "pulse-neon": {
+          "0%, 100%": { boxShadow: "0 0 0 0 rgba(0, 212, 255, 0.6)" },
+          "50%":      { boxShadow: "0 0 0 12px rgba(0, 212, 255, 0)" },
+        },
+        shimmer: {
+          "0%":   { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+        "fade-in": {
+          from: { opacity: "0", transform: "translateY(8px)" },
+          to:   { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "pulse-danger": "pulse-danger 2s ease-in-out infinite",
+        "pulse-neon":   "pulse-neon 2s ease-in-out infinite",
+        shimmer:        "shimmer 1.5s linear infinite",
+        "fade-in":      "fade-in 0.4s ease-out",
       },
     },
   },

@@ -1,0 +1,203 @@
+{
+  "main": {
+    "id": "4b4f9bf5dddd0c76",
+    "type": "split",
+    "children": [
+      {
+        "id": "8f19b266e741eadb",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "597d4ae9ab5779c9",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "LOG.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "LOG"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "addc2e0cc5e5067a",
+    "type": "split",
+    "children": [
+      {
+        "id": "d0b0fe0bc35b4c8d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4bf93a1374f47e6f",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Explorador de arquivos"
+            }
+          },
+          {
+            "id": "f4df491855ab8120",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Procurar"
+            }
+          },
+          {
+            "id": "14a98807604082b7",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Marcadores"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "c12bce4b448d6bca",
+    "type": "split",
+    "children": [
+      {
+        "id": "320e5feb225a6618",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "29fc5603e972e90a",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "LOG.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Links inversos para LOG"
+            }
+          },
+          {
+            "id": "948e09aaaabbc5b3",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "LOG.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Links de saída para LOG"
+            }
+          },
+          {
+            "id": "189490f5d11a18ee",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Etiquetas"
+            }
+          },
+          {
+            "id": "ad6b1a6c0c8fee36",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Todas as propriedades"
+            }
+          },
+          {
+            "id": "a8f018dfae7ac49a",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "LOG.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Sumário de LOG"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Abrir a troca rápida": false,
+      "graph:Abrir visualização em gráfico": false,
+      "canvas:Criar novo canvas": false,
+      "daily-notes:Abrir a nota de hoje": false,
+      "templates:Inserir modelo": false,
+      "command-palette:Abrir paleta de comandos": false,
+      "bases:Criar nova base": false
+    }
+  },
+  "active": "597d4ae9ab5779c9",
+  "lastOpenFiles": [
+    "visão-geral.md.md",
+    "log.md.md",
+    "LOG.md",
+    "vitest.config.ts.timestamp-1775700339440-31806ccef07b88.mjs",
+    "dist/index.html",
+    "dist/assets/purify.es-BgtpMKW3.js",
+    "dist/assets/index.es-D5mRAVmH.js",
+    "dist/assets/index-B4Loo1t0.js",
+    "dist/assets/index-B0pfwdHt.css",
+    "dist/assets/html2canvas.esm-CBrSDip1.js",
+    "dist/assets",
+    "vite.config.ts.timestamp-1775700275677-1f73a60ce187a.mjs",
+    "vite.config.ts.timestamp-1775700173874-6d77deaeb7d6b8.mjs",
+    "CLAUDE.md"
+  ]
+}

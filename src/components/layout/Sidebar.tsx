@@ -5,6 +5,7 @@ import {
   ChevronDown, ChevronRight, X, Award
 } from 'lucide-react';
 import { PlanWidget } from './PlanWidget';
+import { Logo } from '@/assets/logo';
 
 interface SidebarProps {
   onClose: () => void;
@@ -54,13 +55,22 @@ export function Sidebar({ onClose }: SidebarProps) {
       }}
     >
       {/* Logo */}
-      <div className="p-5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--color-border)' }}>
-        <div>
-          <h1 className="font-display text-lg font-bold" style={{ color: 'var(--color-primary)' }}>
-            VistorIA
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Laudos Inteligentes</p>
-        </div>
+      <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--color-border)' }}>
+        <button
+          type="button"
+          onClick={() => navigate('/dashboard')}
+          className="flex flex-col items-start gap-0.5 transition-opacity hover:opacity-80"
+          aria-label="VistorIA — Ir para o dashboard"
+        >
+          <Logo
+            className="h-9 w-auto"
+            textColor="var(--color-primary)"
+            accentColor="var(--color-accent)"
+          />
+          <p className="text-[10px] tracking-widest uppercase" style={{ color: 'var(--color-text-muted)' }}>
+            Laudos Inteligentes
+          </p>
+        </button>
         <button
           type="button"
           onClick={onClose}

@@ -3,6 +3,7 @@ import { Menu, LogOut, User } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 interface TopBarProps {
   onMenuClick: () => void;
@@ -72,10 +73,13 @@ export function TopBar({ onMenuClick }: TopBarProps) {
         </span>
       </div>
 
-      <div className="relative" ref={popoverRef}>
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+
+        <div className="relative" ref={popoverRef}>
         <button
           onClick={() => setPopoverOpen(!popoverOpen)}
-          className="w-8 h-8 rounded-full flex items-center justify-center font-display text-xs font-bold"
+          className="w-8 h-8 rounded-full flex items-center justify-center font-display text-xs font-bold transition-shadow hover:shadow-md"
           style={{
             background: 'var(--color-primary)',
             color: '#fff',
@@ -113,6 +117,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
             </button>
           </div>
         )}
+        </div>
       </div>
     </header>
   );

@@ -4,65 +4,80 @@ import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
+import { Logo } from '@/assets/logo';
+
+/**
+ * Login — VistorIA
+ *
+ * Visual: gradiente azul-preto (identidade técnica),
+ * grid de blueprint sutil ao fundo, logo VistorIA centralizado,
+ * card de autenticação com borda dourada.
+ */
 
 export default function Login() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const hasRedirected = useRef(false);
 
-  console.log('🔵 Login: user=', user?.email || 'null', 'loading=', loading);
-
   useEffect(() => {
-    // Se usuário está autenticado e não estamos carregando, redirecionar IMEDIATAMENTE
     if (user && !loading && !hasRedirected.current) {
-      console.log('🟢 Login: Usuário detectado, redirecionando para /dashboard');
       hasRedirected.current = true;
       navigate('/dashboard', { replace: true });
-      return;
     }
   }, [user, loading, navigate]);
 
-  // Se está carregando, mostrar loading
+  // Loading
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
+      <div className="min-h-screen flex items-center justify-center bg-[#0B0F1A]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#D4AF37] mx-auto mb-2"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#DAA520] mx-auto mb-2"></div>
           <p className="text-white text-sm">Carregando autenticação...</p>
         </div>
       </div>
     );
   }
 
-  // Se usuário está autenticado, NÃO renderizar o formulário
   if (user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
+      <div className="min-h-screen flex items-center justify-center bg-[#0B0F1A]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#D4AF37] mx-auto mb-2"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#DAA520] mx-auto mb-2"></div>
           <p className="text-white text-sm">Redirecionando...</p>
         </div>
       </div>
     );
   }
 
-  // Renderizar formulário de login APENAS se não há usuário autenticado
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A] px-4">
-      <div className="w-full max-w-md">
-        {/* Logo + Título */}
+    <div className="min-h-screen relative flex items-center justify-center px-4 bg-gradient-tech bg-tech-grid overflow-hidden">
+      {/* Glow neon decorativo */}
+      <div
+        className="absolute -top-32 -right-32 w-96 h-96 rounded-full blur-3xl opacity-20"
+        style={{ background: 'radial-gradient(circle, #00D4FF 0%, transparent 70%)' }}
+      />
+      <div
+        className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full blur-3xl opacity-15"
+        style={{ background: 'radial-gradient(circle, #DAA520 0%, transparent 70%)' }}
+      />
+
+      <div className="w-full max-w-md relative z-10 animate-fade-in">
+        {/* Logo + Tagline */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-white tracking-tight">
-            Engenharia <span className="text-[#D4AF37]">AI</span>
-          </h1>
-          <p className="text-sm text-zinc-400 mt-2">
-            Laudos técnicos com inteligência artificial
+          <div className="flex justify-center mb-4">
+            <Logo
+              className="h-12 w-auto"
+              textColor="#FFFFFF"
+              accentColor="#F4C430"
+            />
+          </div>
+          <p className="text-sm text-zinc-300 font-medium tracking-wide">
+            Laudos de Engenharia. Precisão com IA.
           </p>
         </div>
 
-        {/* Auth UI */}
-        <div className="bg-[#111111] border border-zinc-800 rounded-xl p-6">
+        {/* Card de Autenticação */}
+        <div className="bg-[#0F1525]/80 backdrop-blur-md border border-[#2A3558] rounded-xl p-6 shadow-xl">
           <Auth
             supabaseClient={supabase}
             appearance={{
@@ -70,16 +85,24 @@ export default function Login() {
               variables: {
                 default: {
                   colors: {
-                    brand: '#D4AF37',
-                    brandAccent: '#B8962E',
-                    inputBackground: '#1A1A1A',
-                    inputBorder: '#3F3F46',
+                    brand: '#3B5BDB',
+                    brandAccent: '#00D4FF',
+                    inputBackground: '#151B2E',
+                    inputBorder: '#2A3558',
                     inputText: '#FFFFFF',
-                    inputPlaceholder: '#71717A',
+                    inputPlaceholder: '#6B7280',
+                    messageText: '#D1D5DB',
+                    anchorTextColor: '#00D4FF',
                   },
                   radii: {
                     borderRadiusButton: '8px',
                     inputBorderRadius: '8px',
+                  },
+                  fonts: {
+                    bodyFontFamily: 'Inter, system-ui, sans-serif',
+                    buttonFontFamily: 'Inter, system-ui, sans-serif',
+                    inputFontFamily: 'Inter, system-ui, sans-serif',
+                    labelFontFamily: 'Inter, system-ui, sans-serif',
                   },
                 },
               },
@@ -109,15 +132,15 @@ export default function Login() {
           />
         </div>
 
-        <p className="text-center text-xs text-zinc-600 mt-6">
+        <p className="text-center text-xs text-zinc-400 mt-6">
           Ao continuar, você concorda com nossos{' '}
-          <span className="text-zinc-400 cursor-pointer hover:text-[#D4AF37]">
+          <a href="#" className="text-zinc-300 hover:text-[#00D4FF] transition-colors">
             Termos de Uso
-          </span>{' '}
+          </a>{' '}
           e{' '}
-          <span className="text-zinc-400 cursor-pointer hover:text-[#D4AF37]">
+          <a href="#" className="text-zinc-300 hover:text-[#00D4FF] transition-colors">
             Política de Privacidade
-          </span>
+          </a>
         </p>
       </div>
     </div>

@@ -1,59 +1,70 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ══════════════════════════════════════════════════════════════
+   VistorIA — Design System
+   Paleta: Azul Primário + Azul Neon (hover/dark) + Dourado Metálico
+   ══════════════════════════════════════════════════════════════ */
+
 :root {
-  /* ── Paleta Principal ── */
-  --color-primary:        #005f73;
-  --color-primary-dark:   #003d4d;
-  --color-primary-hover:  #004d5e;
-  --color-primary-light:  #E8F4F6;
-  --color-accent:         #D4AF37;
-  --color-accent-dark:    #b8962e;
-  --color-accent-light:   #FDF8E7;
+  /* ── Paleta VistorIA (modo claro) ── */
+  --color-primary:        #1E3A8A;  /* Azul primário — CTAs, headers */
+  --color-primary-dark:   #162A66;
+  --color-primary-hover:  #1E40AF;
+  --color-primary-light:  #EEF2FB;
+
+  --color-accent:         #DAA520;  /* Dourado metálico — bordas, ícones */
+  --color-accent-dark:    #B8860B;
+  --color-accent-light:   #FDF6E3;
+
+  --color-neon:           #00D4FF;  /* Azul neon — acento de IA (USAR EM DARK/HOVER/GLOW) */
+  --color-neon-dim:       #00A8CC;  /* Variante com melhor contraste em fundo claro */
 
   /* ── Semânticas ── */
-  --color-danger:         #C0392B;
-  --color-danger-light:   #FDEDEC;
-  --color-warning:        #E67E22;
-  --color-warning-light:  #FEF5EC;
-  --color-success:        #1A7340;
-  --color-success-light:  #EAFAF1;
-  --color-info:           #1A5276;
-  --color-info-light:     #EBF5FB;
+  --color-danger:         #DC2626;
+  --color-danger-light:   #FEE2E2;
+  --color-warning:        #F59E0B;
+  --color-warning-light:  #FEF3C7;
+  --color-success:        #10B981;
+  --color-success-light:  #D1FAE5;
+  --color-info:           #3B82F6;
+  --color-info-light:     #DBEAFE;
 
-  /* ── Superfícies ── */
-  --color-bg:             #F0F4F8;
+  /* ── Superfícies (modo claro) ── */
+  --color-bg:             #F3F4F6;  /* Cinza claro — fundo principal */
   --color-surface:        #FFFFFF;
   --color-surface-raised: #FFFFFF;
-  --color-border:         #E2E8F0;
-  --color-border-dark:    #CBD5E0;
+  --color-surface-alt:    #F9FAFB;
+  --color-border:         #E5E7EB;
+  --color-border-dark:    #D1D5DB;
 
-  /* ── Texto ── */
-  --color-text-primary:   #1A202C;
-  --color-text-secondary: #4A5568;
-  --color-text-muted:     #718096;
-  --color-text-disabled:  #A0AEC0;
+  /* ── Texto (modo claro) ── */
+  --color-text-primary:   #374151;  /* Cinza escuro — textos principais */
+  --color-text-secondary: #4B5563;
+  --color-text-muted:     #6B7280;
+  --color-text-disabled:  #9CA3AF;
 
-  /* ── Foco Neon ── */
-  --color-focus:          #00e5ff;
-  --shadow-focus:         0 0 0 3px rgba(0, 229, 255, 0.35);
+  /* ── Foco (modo claro usa primary, não neon, para AA) ── */
+  --color-focus:          #1E3A8A;
+  --shadow-focus:         0 0 0 3px rgba(30, 58, 138, 0.30);
 
   /* ── Tipografia ── */
-  --font-display:         'DM Sans', 'Plus Jakarta Sans', sans-serif;
-  --font-body:            'IBM Plex Sans', 'Inter', system-ui, sans-serif;
-  --font-mono:            'IBM Plex Mono', 'Fira Code', monospace;
+  --font-display:         'Inter', system-ui, sans-serif;
+  --font-body:            'Inter', system-ui, sans-serif;
+  --font-mono:            'JetBrains Mono', 'Fira Code', monospace;
 
   /* ── Elevação ── */
-  --shadow-xs:   0 1px 2px rgba(0,0,0,0.05);
-  --shadow-sm:   0 2px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md:   0 4px 8px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
-  --shadow-lg:   0 8px 24px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06);
-  --shadow-xl:   0 20px 40px rgba(0,0,0,0.16);
-  --shadow-card: 0 2px 8px rgba(0, 95, 115, 0.08);
-  --shadow-gold: 0 4px 16px rgba(212, 175, 55, 0.25);
+  --shadow-xs:   0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-sm:   0 2px 4px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md:   0 4px 8px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.05);
+  --shadow-lg:   0 8px 24px rgba(15, 23, 42, 0.12), 0 4px 8px rgba(15, 23, 42, 0.06);
+  --shadow-xl:   0 20px 40px rgba(15, 23, 42, 0.16);
+  --shadow-card: 0 2px 8px rgba(30, 58, 138, 0.08);
+  --shadow-gold: 0 4px 16px rgba(218, 165, 32, 0.25);
+  --shadow-neon: 0 0 20px rgba(0, 212, 255, 0.45);
 
   /* ── Bordas ── */
   --radius-xs:   4px;
@@ -73,41 +84,120 @@
   --topbar-height:     56px;
   --sidebar-border:    4px solid var(--color-accent);
 
-  /* ── Shadcn compatibility ── */
-  --background: 210 25% 96.5%;
-  --foreground: 220 26% 14%;
+  /* ── Shadcn compatibility (HSL, modo claro) ── */
+  --background: 220 14% 96%;              /* #F3F4F6 */
+  --foreground: 220 9% 28%;               /* #374151 */
   --card: 0 0% 100%;
-  --card-foreground: 220 26% 14%;
+  --card-foreground: 220 9% 28%;
   --popover: 0 0% 100%;
-  --popover-foreground: 220 26% 14%;
-  --primary: 190 100% 22.5%;
+  --popover-foreground: 220 9% 28%;
+  --primary: 224 64% 33%;                 /* #1E3A8A */
   --primary-foreground: 0 0% 100%;
-  --secondary: 210 25% 96.5%;
-  --secondary-foreground: 220 26% 14%;
-  --muted: 214 32% 91.4%;
-  --muted-foreground: 215 12% 52%;
-  --accent: 46 68% 52%;
-  --accent-foreground: 220 26% 14%;
-  --destructive: 4 63% 46%;
+  --secondary: 220 14% 96%;
+  --secondary-foreground: 220 9% 28%;
+  --muted: 220 13% 91%;
+  --muted-foreground: 220 9% 46%;
+  --accent: 43 74% 49%;                   /* #DAA520 */
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
-  --border: 214 32% 91.4%;
-  --input: 214 32% 91.4%;
-  --ring: 190 100% 22.5%;
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 224 64% 33%;
   --radius: 0.625rem;
 }
 
-/* ── Reset e Base ── */
+/* ══════════════════════════════════════════════════════════════
+   Dark Mode — Identidade técnica / noturna
+   Aqui o azul neon #00D4FF brilha ✨
+   ══════════════════════════════════════════════════════════════ */
+
+.dark {
+  --color-primary:        #3B5BDB;  /* Azul ajustado para contraste em fundo escuro */
+  --color-primary-dark:   #2747B8;
+  --color-primary-hover:  #4C6EF5;
+  --color-primary-light:  #1A2035;
+
+  --color-accent:         #F4C430;  /* Dourado mais vivo no dark */
+  --color-accent-dark:    #DAA520;
+  --color-accent-light:   #2A2418;
+
+  /* Superfícies (dark) */
+  --color-bg:             #0B0F1A;  /* Azul-preto profundo */
+  --color-surface:        #151B2E;  /* Cards */
+  --color-surface-raised: #1E2642;
+  --color-surface-alt:    #0F1525;
+  --color-border:         #2A3558;
+  --color-border-dark:    #3A4574;
+
+  /* Texto (dark) */
+  --color-text-primary:   #F3F4F6;
+  --color-text-secondary: #D1D5DB;
+  --color-text-muted:     #9CA3AF;
+  --color-text-disabled:  #6B7280;
+
+  /* Foco neon no dark ✨ */
+  --color-focus:          #00D4FF;
+  --shadow-focus:         0 0 0 3px rgba(0, 212, 255, 0.40);
+
+  /* Shadows dark (mais sutis) */
+  --shadow-xs:   0 1px 2px rgba(0, 0, 0, 0.30);
+  --shadow-sm:   0 2px 4px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md:   0 4px 8px rgba(0, 0, 0, 0.40), 0 2px 4px rgba(0, 0, 0, 0.25);
+  --shadow-lg:   0 8px 24px rgba(0, 0, 0, 0.50), 0 4px 8px rgba(0, 0, 0, 0.30);
+  --shadow-xl:   0 20px 40px rgba(0, 0, 0, 0.60);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.40);
+  --shadow-gold: 0 4px 20px rgba(244, 196, 48, 0.30);
+  --shadow-neon: 0 0 24px rgba(0, 212, 255, 0.55);
+
+  /* Shadcn (HSL, dark) */
+  --background: 224 42% 7%;               /* #0B0F1A */
+  --foreground: 220 14% 96%;
+  --card: 224 36% 13%;                    /* #151B2E */
+  --card-foreground: 220 14% 96%;
+  --popover: 224 36% 13%;
+  --popover-foreground: 220 14% 96%;
+  --primary: 226 66% 54%;                 /* #3B5BDB */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 224 32% 18%;
+  --secondary-foreground: 220 14% 96%;
+  --muted: 224 32% 18%;
+  --muted-foreground: 220 10% 65%;
+  --accent: 47 89% 57%;                   /* #F4C430 */
+  --accent-foreground: 224 42% 7%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 224 28% 25%;
+  --input: 224 28% 25%;
+  --ring: 190 100% 50%;                   /* Neon ring */
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Reset & Base
+   ══════════════════════════════════════════════════════════════ */
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; -webkit-font-smoothing: antialiased; }
 body {
   font-family: var(--font-body);
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';  /* Inter tweaks */
   background: var(--color-bg);
   color: var(--color-text-primary);
   line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
-h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); font-weight: 600; }
 
-/* ── Foco Universal (teclado) ── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Foco Universal (acessibilidade)
+   ══════════════════════════════════════════════════════════════ */
+
 input:focus-visible, textarea:focus-visible, select:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 1px;
@@ -125,7 +215,10 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   border-radius: var(--radius-sm);
 }
 
-/* ── Skip Navigation ── */
+/* ══════════════════════════════════════════════════════════════
+   Skip navigation
+   ══════════════════════════════════════════════════════════════ */
+
 .skip-link {
   position: absolute;
   top: -100%;
@@ -140,55 +233,157 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   text-decoration: none;
   transition: top 0.2s;
 }
-.skip-link:focus {
-  top: 8px;
-}
+.skip-link:focus { top: 8px; }
 
-/* ── KPICard Hover (CSS puro) ── */
+/* ══════════════════════════════════════════════════════════════
+   Componentes custom (KPI cards, sidebar, etc.)
+   ══════════════════════════════════════════════════════════════ */
+
 .kpi-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-left-width 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .kpi-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
-  border-left-width: 7px;
+}
+.dark .kpi-card:hover {
+  box-shadow: var(--shadow-lg), 0 0 20px rgba(0, 212, 255, 0.15);
 }
 
-/* ── Sidebar Nav Hover (CSS puro) ── */
 .sidebar-nav-item {
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 .sidebar-nav-item:hover:not([data-active="true"]) {
-  background: rgba(0, 95, 115, 0.04);
+  background: rgba(30, 58, 138, 0.06);
 }
+.dark .sidebar-nav-item:hover:not([data-active="true"]) {
+  background: rgba(0, 212, 255, 0.08);
+  color: var(--color-neon);
+}
+
 .sidebar-upgrade-btn {
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 .sidebar-upgrade-btn:hover {
   background: var(--color-accent) !important;
   color: #fff !important;
+  box-shadow: var(--shadow-gold);
 }
 
-/* ── Thumbnail de Foto ── */
-.foto-thumb {
-  height: 120px;
-}
+.foto-thumb { height: 120px; }
 
-/* ── Disabled Buttons ── */
 button:disabled, a[aria-disabled="true"] {
   cursor: not-allowed !important;
   opacity: 0.45;
   pointer-events: auto;
 }
-button:disabled:active {
-  transform: none;
+button:disabled:active { transform: none; }
+
+/* ══════════════════════════════════════════════════════════════
+   Utilitários VistorIA (glow, gradient, shimmer)
+   ══════════════════════════════════════════════════════════════ */
+
+/* Glow neon — usar em hover de elementos interativos no dark mode */
+.glow-neon {
+  position: relative;
+  transition: box-shadow 0.3s ease;
+}
+.dark .glow-neon:hover {
+  box-shadow: var(--shadow-neon);
 }
 
-/* ── Scrollbar Custom ── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+/* Borda dourada sutil — cards premium */
+.card-gold-border {
+  border: 1px solid var(--color-accent);
+  box-shadow: var(--shadow-gold);
+}
+
+/* Gradiente técnico (landing hero) */
+.bg-gradient-tech {
+  background: linear-gradient(135deg, #1E3A8A 0%, #1E40AF 50%, #3B82F6 100%);
+}
+.dark .bg-gradient-tech {
+  background: linear-gradient(135deg, #0B0F1A 0%, #151B2E 50%, #1E2642 100%);
+}
+
+.bg-gradient-gold {
+  background: linear-gradient(135deg, #DAA520 0%, #F4C430 100%);
+}
+
+/* Texto com gradiente (usar em H1 destaques) */
+.text-gradient-primary {
+  background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.dark .text-gradient-primary {
+  background: linear-gradient(135deg, #60A5FA 0%, #00D4FF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #DAA520 0%, #F4C430 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Shimmer (loading states) */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg,
+    var(--color-surface-alt) 0%,
+    var(--color-surface) 50%,
+    var(--color-surface-alt) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+/* Pulso neon — indicador de processamento IA */
+@keyframes pulse-neon {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.6); }
+  50%      { box-shadow: 0 0 0 12px rgba(0, 212, 255, 0); }
+}
+.pulse-neon {
+  animation: pulse-neon 2s ease-in-out infinite;
+}
+
+/* Grid técnico (background plantas de engenharia) */
+.bg-tech-grid {
+  background-image:
+    linear-gradient(rgba(30, 58, 138, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 58, 138, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.dark .bg-tech-grid {
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Scrollbar custom
+   ══════════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--color-bg); }
-::-webkit-scrollbar-thumb { background: var(--color-border-dark); border-radius: 3px; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-dark);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
 ::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
+.dark ::-webkit-scrollbar-thumb:hover { background: var(--color-neon); }
+
+/* ══════════════════════════════════════════════════════════════
+   Tailwind base layer (mantém integração shadcn)
+   ══════════════════════════════════════════════════════════════ */
 
 @layer base {
   * {

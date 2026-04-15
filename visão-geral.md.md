@@ -1,0 +1,1 @@
+# VistorIA Sistema de geração de laudos técnicos com análise de fotos via Gemini. ## Stack React 18 + TypeScript + Vite / Supabase + Edge Functions / Gemini 2.5 Flash / Stripe / Vercel ## Links - Repo: [url] - Deploy: [url] - Supabase: [url] ## Status 🟡 Em progresso — Histórico de laudos + PDF + Stripe webhooks
