@@ -27,11 +27,15 @@ export const OFFLINE_CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutos
 
 // ─── PDF ─────────────────────────────────────────────────────
 export const PDF_MAX_FOTOS = 10;
+/**
+ * @deprecated Paleta legada. Novos componentes devem usar `src/lib/pdf/theme.ts`.
+ * Mantido para não quebrar imports existentes.
+ */
 export const PDF_COLORS = {
-    primary: [212, 175, 55] as [number, number, number],   // Gold
-    dark: [10, 10, 10] as [number, number, number],        // Near-black
-    light: [245, 245, 245] as [number, number, number],    // Light gray
-    muted: [150, 150, 150] as [number, number, number],    // Gray (footer)
+    primary: [30, 58, 138] as [number, number, number],    // #1E3A8A — Azul VistorIA
+    dark: [55, 65, 81] as [number, number, number],        // #374151 — Cinza escuro
+    light: [243, 244, 246] as [number, number, number],    // #F3F4F6 — Cinza claro
+    muted: [156, 163, 175] as [number, number, number],    // #9CA3AF — Muted
 };
 
 // ─── Planos ──────────────────────────────────────────────────
