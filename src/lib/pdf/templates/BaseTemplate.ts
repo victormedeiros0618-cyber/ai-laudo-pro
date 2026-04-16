@@ -30,11 +30,26 @@ import { renderSignatureBlock, type SignatureData } from '../components/Signatur
 import { renderFindingCard } from '../components/FindingCard';
 import { renderPhotoGallery } from '../components/PhotoBlock';
 import { renderClassificationTable } from '../components/ClassificationTable';
+import { renderAnexoART } from '../components/AnexoART';
 import { textoEncerramento, formatDateExtenso, formatDateShort } from '../utils/text';
 import { PDF_MAX_FOTOS } from '@/lib/constants';
 import type { AchadoTecnico, RelatorioIA } from '@/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+/** Configuração white-label: logo, dados institucionais, cor primária */
+export interface WhiteLabelConfig {
+  /** Logo do escritório em base64 (JPEG/PNG) — exibido no header */
+  logoBase64?: string;
+  /** Cor primária override [R, G, B] — substitui COLORS.primary no PDF */
+  corPrimaria?: readonly [number, number, number];
+  /** Texto institucional no rodapé (ex: "CNPJ 00.000.000/0001-00 | CREA-SP 0000000") */
+  footerInstitucional?: string;
+  /** Nome do escritório (exibido no header ao lado do logo) */
+  nomeEscritorio?: string;
+  /** ART (Anotação de Responsabilidade Técnica) em base64 — anexada como última página */
+  artBase64?: string;
+}
 
 export interface LaudoData {
   formData: {
@@ -50,6 +65,8 @@ export interface LaudoData {
   achados: AchadoTecnico[];
   fotos: string[];
   assinatura?: SignatureData;
+  /** Personalização white-label (Fase 5) */
+  whiteLabel?: WhiteLabelConfig;
 }
 
 // ─── Textos padrão ────────────────────────────────────────────────────────────
@@ -118,10 +135,15 @@ export class BaseTemplate {
     // ── 3. Seções de conteúdo ──
     this.renderAllSections();
 
-    // ── 4. Voltar e preencher o TOC ──
+    // ── 4. Anexo ART (Fase 5 — white-label) ──
+    if (this.data.whiteLabel?.artBase64) {
+      renderAnexoART(this.pdf, this.data.whiteLabel.artBase64);
+    }
+
+    // ── 5. Voltar e preencher o TOC ──
     this.fillTOC(tocPageNumber);
 
-    // ── 5. Cabeçalho/rodapé (exceto capa) ──
+    // ── 6. Cabeçalho/rodapé (exceto capa) ──
     this.pdf.applyHeaderFooter();
 
     // Limpar header/footer da capa (página 1)

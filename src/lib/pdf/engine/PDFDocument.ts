@@ -23,8 +23,14 @@ export interface PDFDocumentOptions {
   footerText?: string;
   /** Texto do header (ex: "LAUDO TÉCNICO") */
   headerLabel?: string;
-  /** Logo base64 para header (opcional — Fase 5) */
+  /** Logo base64 para header (JPEG/PNG) */
   logoBase64?: string;
+  /** Nome do escritório — exibido à direita do logo no header */
+  nomeEscritorio?: string;
+  /** Texto institucional extra no footer (ex: "CNPJ ... | CREA ...") */
+  footerInstitucional?: string;
+  /** Cor primária override [R, G, B] — para faixas, seções etc. */
+  corPrimariaOverride?: readonly [number, number, number];
 }
 
 // ─── Class ────────────────────────────────────────────────────────────────────
@@ -42,6 +48,9 @@ export class PDFDocument {
       footerText: options.footerText ?? 'Gerado por VistorIA',
       headerLabel: options.headerLabel ?? '',
       logoBase64: options.logoBase64 ?? '',
+      nomeEscritorio: options.nomeEscritorio ?? '',
+      footerInstitucional: options.footerInstitucional ?? '',
+      corPrimariaOverride: options.corPrimariaOverride ?? ([0, 0, 0] as const),
     };
 
     this.registerFonts();
@@ -95,6 +104,16 @@ export class PDFDocument {
   /** Número da página atual */
   get currentPage(): number {
     return this.doc.getNumberOfPages();
+  }
+
+  /** Cor primária efetiva (override white-label ou padrão VistorIA) */
+  get primaryColor(): RGBTuple {
+    const ov = this.opts.corPrimariaOverride;
+    // Se tem override válido (não [0,0,0] que é o default vazio)
+    if (ov && (ov[0] !== 0 || ov[1] !== 0 || ov[2] !== 0)) {
+      return ov as unknown as RGBTuple;
+    }
+    return COLORS.primary;
   }
 
   // ─── Auto Page Break ──────────────────────────────────────────────────────
@@ -263,11 +282,40 @@ export class PDFDocument {
     const totalPages = this.doc.getNumberOfPages();
     const now = new Date();
     const dateStr = now.toLocaleDateString('pt-BR');
+    const hasLogo = this.opts.logoBase64.length > 0;
+    const hasEscritorio = this.opts.nomeEscritorio.length > 0;
+    const hasInstitucional = this.opts.footerInstitucional.length > 0;
 
     for (let page = 1; page <= totalPages; page++) {
       this.doc.setPage(page);
 
       // ── Header ──
+
+      // Logo do escritório (white-label, Fase 5)
+      if (hasLogo) {
+        try {
+          this.doc.addImage(
+            this.opts.logoBase64,
+            'JPEG',
+            LAYOUT.margin.left,
+            5,
+            14, // largura fixa 14mm
+            14  // altura fixa 14mm
+          );
+        } catch {
+          // Logo inválido — ignorar silenciosamente
+        }
+      }
+
+      // Nome do escritório (ao lado do logo ou na margem esquerda)
+      if (hasEscritorio) {
+        const nomeX = hasLogo ? LAYOUT.margin.left + 16 : LAYOUT.margin.left;
+        this.setFont('bold', FONT.size.micro);
+        this.setTextColor(COLORS.dark);
+        this.doc.text(this.opts.nomeEscritorio, nomeX, 12);
+      }
+
+      // Label do tipo de laudo (direita)
       if (this.opts.headerLabel) {
         this.setFont('normal', FONT.size.micro);
         this.setTextColor(COLORS.muted);
@@ -292,12 +340,29 @@ export class PDFDocument {
       this.setFont('normal', FOOTER.fontSize);
       this.setTextColor(FOOTER.color);
 
-      // Esquerda: texto institucional
-      this.doc.text(
-        `${this.opts.footerText} em ${dateStr}`,
-        LAYOUT.margin.left,
-        FOOTER.textY
-      );
+      // Linha 1: texto institucional (white-label) ou "Gerado por VistorIA"
+      if (hasInstitucional) {
+        // Footer com dados do escritório
+        this.doc.text(
+          this.opts.footerInstitucional,
+          LAYOUT.margin.left,
+          FOOTER.textY - 3.5
+        );
+        // Segunda linha: gerado por VistorIA + data
+        this.setFont('normal', FONT.size.micro);
+        this.doc.text(
+          `${this.opts.footerText} em ${dateStr}`,
+          LAYOUT.margin.left,
+          FOOTER.textY
+        );
+      } else {
+        // Footer simples (padrão)
+        this.doc.text(
+          `${this.opts.footerText} em ${dateStr}`,
+          LAYOUT.margin.left,
+          FOOTER.textY
+        );
+      }
 
       // Direita: paginação
       this.doc.text(

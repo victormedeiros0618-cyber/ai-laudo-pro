@@ -10,3 +10,6 @@ export { renderKeyValueBlock, type KeyValueItem } from './KeyValueBlock';
 export { renderFindingCard } from './FindingCard';
 export { renderPhotoBlock, renderPhotoGallery, type PhotoBlockOptions } from './PhotoBlock';
 export { renderClassificationTable, type ClassificationTableData } from './ClassificationTable';
+
+// Fase 5 — Anexo ART + White-label
+export { renderAnexoART } from './AnexoART';

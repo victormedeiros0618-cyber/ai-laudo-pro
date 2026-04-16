@@ -1,17 +1,20 @@
 /**
  * src/lib/pdf/index.ts — Entrypoint do sistema de PDF VistorIA
  *
- * Fase 2: Template base completo com 10 seções NBR/IBAPE,
- * capa-carta formal, sumário (TOC), cabeçalho/rodapé institucional,
- * bullets ✓/▷, tabela IBAPE, encerramento e assinatura.
+ * Fases 1-5 completas:
+ * - Fase 1: Engine jsPDF + fontes Inter
+ * - Fase 2: Template base 10 seções NBR/IBAPE + capa + TOC + header/footer
+ * - Fase 3: Componentes IA (FindingCard, PhotoBlock, ClassificationTable)
+ * - Fase 4: 7 templates NBR-específicos com router por tipoLaudo
+ * - Fase 5: White-label (logo, cor primária, footer institucional) + Anexo ART
  *
  * Exporta:
- * - gerarPDF(params)          — API nova (usa BaseTemplate)
- * - gerarPDFOficial(params)   — wrapper legado (mesma assinatura do antigo)
+ * - gerarPDF(params)          — API principal (roteia por tipoLaudo)
+ * - gerarPDFOficial(params)   — wrapper legado (mesma assinatura)
  */
 
 import { PDFDocument } from './engine/PDFDocument';
-import { BaseTemplate, type LaudoData } from './templates/BaseTemplate';
+import { BaseTemplate, type LaudoData, type WhiteLabelConfig } from './templates/BaseTemplate';
 import { PericiaJudicialTemplate } from './templates/PericiaJudicialTemplate';
 import { CautelarVizinhancaTemplate } from './templates/CautelarVizinhancaTemplate';
 import { VistoriaTecnicaTemplate } from './templates/VistoriaTecnicaTemplate';
@@ -45,6 +48,8 @@ export interface GerarPDFParams {
   fotos: string[];
   iaResult: RelatorioIA;
   assinatura?: AssinaturaDigital;
+  /** Personalização white-label: logo, cor, footer institucional, ART (Fase 5) */
+  whiteLabel?: WhiteLabelConfig;
 }
 
 // ─── Router: tipo de laudo → template específico ─────────────────────────────
@@ -73,14 +78,19 @@ export const gerarPDF = async (params: GerarPDFParams): Promise<void> => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       try {
-        const { achados, formData, fotos, iaResult, assinatura } = params;
+        const { achados, formData, fotos, iaResult, assinatura, whiteLabel } = params;
 
         // Rotear para template específico por tipo de laudo (Fase 4)
         const { Template, headerLabel } = resolveTemplate(formData.tipoLaudo);
 
+        // White-label: injetar logo, footer institucional, cor primária (Fase 5)
         const pdf = new PDFDocument({
           footerText: 'Gerado por VistorIA',
           headerLabel,
+          logoBase64: whiteLabel?.logoBase64,
+          nomeEscritorio: whiteLabel?.nomeEscritorio,
+          footerInstitucional: whiteLabel?.footerInstitucional,
+          corPrimariaOverride: whiteLabel?.corPrimaria,
         });
 
         // Montar LaudoData a partir dos params legados
@@ -90,6 +100,7 @@ export const gerarPDF = async (params: GerarPDFParams): Promise<void> => {
           achados,
           fotos,
           assinatura,
+          whiteLabel,
         };
 
         // Renderizar usando template específico (ou BaseTemplate como fallback)

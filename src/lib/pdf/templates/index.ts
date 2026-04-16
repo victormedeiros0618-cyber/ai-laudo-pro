@@ -1,4 +1,4 @@
-export { BaseTemplate, type LaudoData } from './BaseTemplate';
+export { BaseTemplate, type LaudoData, type WhiteLabelConfig } from './BaseTemplate';
 export { LaudoReformaTemplate } from './LaudoReformaTemplate';
 export { LaudoAvaliacaoTemplate } from './LaudoAvaliacaoTemplate';
 export { LaudoCautelarTemplate } from './LaudoCautelarTemplate';
