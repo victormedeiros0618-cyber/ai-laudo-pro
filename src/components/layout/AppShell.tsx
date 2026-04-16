@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { SandboxBanner } from '../ui/SandboxBanner';
+import { OnboardingTour } from '../onboarding/OnboardingTour';
 
 export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -26,6 +27,7 @@ export function AppShell() {
       </a>
 
       <SandboxBanner />
+      <OnboardingTour />
       <div className="flex flex-1 w-full">
         {/* Mobile overlay */}
         {sidebarOpen && (

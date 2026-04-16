@@ -93,6 +93,11 @@ export function Sidebar({ onClose }: SidebarProps) {
                 key={item.label}
                 onClick={() => { navigate(item.path!); onClose(); }}
                 data-active={active || undefined}
+                data-tour={
+                  item.path === '/dashboard' ? 'nav-dashboard' :
+                  item.path === '/novo-laudo' ? 'nav-novo-laudo' :
+                  undefined
+                }
                 className={`
                   sidebar-nav-item relative w-full flex items-center gap-3 px-5 py-2.5 text-sm font-medium
                   ${active
@@ -119,6 +124,11 @@ export function Sidebar({ onClose }: SidebarProps) {
                 type="button"
                 onClick={() => toggleAccordion(item.label)}
                 aria-expanded={isExpanded ? 'true' : 'false'}
+                data-tour={
+                  item.label === 'Historico' ? 'nav-historico' :
+                  item.label === 'Configuracoes' ? 'nav-configuracoes' :
+                  undefined
+                }
                 className="sidebar-nav-item w-full flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-text-secondary hover:text-primary dark:hover:text-[#00D4FF]"
               >
                 {Icon && <Icon size={18} />}
@@ -159,6 +169,7 @@ export function Sidebar({ onClose }: SidebarProps) {
         <button
           type="button"
           onClick={() => { navigate('/planos'); onClose(); }}
+          data-tour="nav-planos"
           className="sidebar-upgrade-btn w-full mt-3 flex items-center justify-center gap-2 py-2 rounded-md text-xs font-semibold bg-accent/10 text-accent-dark hover:bg-accent hover:text-[#0B0F1A] hover:shadow-gold transition-all"
         >
           <Award size={14} />

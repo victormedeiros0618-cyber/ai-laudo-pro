@@ -1,19 +1,32 @@
 import { useState, useEffect, useRef } from 'react';
-import { Check, AlertCircle } from 'lucide-react';
+import { Check, AlertCircle, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { Vistoriador, Configuracoes as ConfigType } from '@/types';
 
 import { SecaoIdentidade } from '@/components/configuracoes/SecaoIdentidade';
 import { SecaoAssinatura } from '@/components/configuracoes/SecaoAssinatura';
 import { SecaoVistoriadores } from '@/components/configuracoes/SecaoVistoriadores';
 import { SecaoTextos } from '@/components/configuracoes/SecaoTextos';
+import { useOnboarding } from '@/hooks/useOnboarding';
 
 export default function Configuracoes() {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { resetOnboarding } = useOnboarding();
+
+  const handleReplayTour = async () => {
+    const ok = await resetOnboarding();
+    if (ok) {
+      toast.success('Tour reiniciado! Redirecionando para o Dashboard...');
+      setTimeout(() => navigate('/dashboard'), 600);
+    } else {
+      toast.error('Não foi possível reiniciar o tour. Tente novamente.');
+    }
+  };
 
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -261,6 +274,39 @@ export default function Configuracoes() {
         onConclusaoChange={handleConclusaoChange}
         saveStatus={saveStatus}
       />
+
+      {/* Ajuda / replay do onboarding */}
+      <div
+        className="rounded-[var(--radius-md)] p-4 flex items-center justify-between gap-3"
+        style={{
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <HelpCircle size={18} style={{ color: 'var(--color-primary)' }} />
+          <div>
+            <p className="text-sm font-display font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+              Rever o tour guiado
+            </p>
+            <p className="text-xs font-body" style={{ color: 'var(--color-text-muted)' }}>
+              Reexibe o passo-a-passo de onboarding no Dashboard.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleReplayTour}
+          className="text-xs font-display font-semibold px-3 py-1.5 rounded-[var(--radius-sm)] transition-all hover:brightness-110"
+          style={{
+            background: 'transparent',
+            color: 'var(--color-primary)',
+            border: '1px solid var(--color-primary)',
+          }}
+        >
+          Ver tour novamente
+        </button>
+      </div>
     </div>
   );
 }

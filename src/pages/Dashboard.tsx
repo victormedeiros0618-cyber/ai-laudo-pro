@@ -30,6 +30,7 @@ export default function Dashboard() {
         </div>
         <Link
           to="/novo-laudo"
+          data-tour="dashboard-novo-laudo-cta"
           className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover dark:hover:shadow-neon transition-all"
         >
           <Plus size={16} />
