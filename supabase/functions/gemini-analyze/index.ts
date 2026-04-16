@@ -218,32 +218,53 @@ Deno.serve(async (req: Request): Promise<Response> => {
         // Impede que o Gemini seja chamado se o usuário já esgotou a cota.
         // Usa a função RPC increment_laudos_used em modo de leitura prévia
         // para não incrementar aqui — o incremento real ocorre após sucesso.
+        // Admins (user_profiles.is_admin = true) pulam a verificação de quota
+        // E o incremento de laudos_used.
+        let isAdmin = false;
         {
-            const { data: sub, error: subError } = await supabase
-                .from("subscriptions")
-                .select("laudos_used, laudos_limit, status")
-                .eq("user_id", userId)
+            // 1) Checa flag de admin primeiro (evita query de subscription)
+            const { data: profile, error: profileError } = await supabase
+                .from("user_profiles")
+                .select("is_admin")
+                .eq("id", userId)
                 .maybeSingle();
 
-            if (subError) {
-                console.error("[gemini-analyze] Erro ao verificar subscription:", subError.message);
-                // Fail open: se não conseguimos verificar, deixa continuar
-                // (evita bloquear usuários por falha no banco)
-            } else if (sub) {
-                if (sub.status === "canceled") {
-                    return new Response(JSON.stringify({ error: "Sua assinatura está cancelada. Reative para continuar." }), {
-                        status: 403,
-                        headers: { ...corsHeaders, "Content-Type": "application/json" },
-                    });
-                }
-                if (sub.laudos_used >= sub.laudos_limit) {
-                    return new Response(JSON.stringify({
-                        error: "Limite de laudos do plano atingido. Faça upgrade para continuar.",
-                        code: "limit_reached",
-                    }), {
-                        status: 429,
-                        headers: { ...corsHeaders, "Content-Type": "application/json" },
-                    });
+            if (profileError) {
+                console.error("[gemini-analyze] Erro ao verificar user_profile:", profileError.message);
+                // Fail open: segue fluxo normal de quota
+            }
+
+            isAdmin = profile?.is_admin === true;
+
+            if (isAdmin) {
+                console.log("[gemini-analyze] Usuário admin — quota ignorada");
+            } else {
+                const { data: sub, error: subError } = await supabase
+                    .from("subscriptions")
+                    .select("laudos_used, laudos_limit, status")
+                    .eq("user_id", userId)
+                    .maybeSingle();
+
+                if (subError) {
+                    console.error("[gemini-analyze] Erro ao verificar subscription:", subError.message);
+                    // Fail open: se não conseguimos verificar, deixa continuar
+                    // (evita bloquear usuários por falha no banco)
+                } else if (sub) {
+                    if (sub.status === "canceled") {
+                        return new Response(JSON.stringify({ error: "Sua assinatura está cancelada. Reative para continuar." }), {
+                            status: 403,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" },
+                        });
+                    }
+                    if (sub.laudos_used >= sub.laudos_limit) {
+                        return new Response(JSON.stringify({
+                            error: "Limite de laudos do plano atingido. Faça upgrade para continuar.",
+                            code: "limit_reached",
+                        }), {
+                            status: 429,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" },
+                        });
+                    }
                 }
             }
         }
@@ -294,7 +315,7 @@ ${instrucoesExtra || "Avalie o estado geral de manutenção e deficiências cons
 
 === FORMATO DE SAÍDA EXIGIDO ===
 RETORNE **EXCLUSIVAMENTE** UM OBJETO JSON VÁLIDO.
-NÃO INCLUA TEXTO ANTES OU DEPOIS. NÃO USE BLOCOS MARKDOWN (como \`\`\`json).
+NÃO INCLUA TEXTO ANTES OU DEPOIS. NÃO USE BLOCOS MARKDOWN (triple backtick json).
 
 Estrutura EXATA do JSON:
 {
@@ -420,19 +441,24 @@ IMPORTANTE:
         // ============ INCREMENTO DE COTA (server-side, atômico) ============
         // Executado apenas após análise bem-sucedida — nunca em cache hit ou erro.
         // Usa função RPC com FOR UPDATE para evitar race condition em requests simultâneos.
-        try {
-            const { data: incrementResult, error: incrementError } = await supabase
-                .rpc("increment_laudos_used", { p_user_id: userId });
+        // Admins não incrementam quota (uso interno/testes).
+        if (isAdmin) {
+            console.log("[gemini-analyze] Admin — incremento de quota ignorado");
+        } else {
+            try {
+                const { data: incrementResult, error: incrementError } = await supabase
+                    .rpc("increment_laudos_used", { p_user_id: userId });
 
-            if (incrementError) {
-                console.error("[gemini-analyze] Erro ao incrementar laudos_used:", incrementError.message);
-                // Não bloqueia: retorna o resultado da análise mesmo assim
-            } else if (incrementResult === "limit_reached") {
-                // Raro: usuário atingiu o limite entre a verificação prévia e agora
-                console.error("[gemini-analyze] Limite atingido no incremento para userId:", userId);
+                if (incrementError) {
+                    console.error("[gemini-analyze] Erro ao incrementar laudos_used:", incrementError.message);
+                    // Não bloqueia: retorna o resultado da análise mesmo assim
+                } else if (incrementResult === "limit_reached") {
+                    // Raro: usuário atingiu o limite entre a verificação prévia e agora
+                    console.error("[gemini-analyze] Limite atingido no incremento para userId:", userId);
+                }
+            } catch (incErr) {
+                console.error("[gemini-analyze] Falha inesperada no incremento:", incErr);
             }
-        } catch (incErr) {
-            console.error("[gemini-analyze] Falha inesperada no incremento:", incErr);
         }
 
         return new Response(JSON.stringify(analysisResult), {
