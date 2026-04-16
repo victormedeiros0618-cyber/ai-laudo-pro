@@ -27,13 +27,15 @@ const corsHeaders = {
     "Access-Control-Allow-Headers": "Content-Type, stripe-signature",
 };
 
-// Mapeia price IDs do Stripe para plan_id do sistema
+// Mapeia price IDs do Stripe (modo test) para plan_id + limite de laudos do sistema.
+// Para adicionar novos planos (anual, upgrade), basta estender este map.
 const STRIPE_PRICE_TO_PLAN: Record<string, { plan_id: string; laudos_limit: number }> = {
-    // TODO: Substituir pelos price IDs reais do Stripe
-    "price_pro_monthly": { plan_id: "pro", laudos_limit: 50 },
-    "price_pro_annual": { plan_id: "pro", laudos_limit: 50 },
-    "price_enterprise_monthly": { plan_id: "enterprise", laudos_limit: 999 },
-    "price_enterprise_annual": { plan_id: "enterprise", laudos_limit: 999 },
+    // Básico (R$ 97/mês) — 5 laudos
+    "price_1TMdshDg01Ub3mW6wBnRl3gT": { plan_id: "basico", laudos_limit: 5 },
+    // Pro (R$ 197/mês) — 30 laudos
+    "price_1TMdtmDg01Ub3mW6zcWnuVlt": { plan_id: "pro", laudos_limit: 30 },
+    // Escritório (R$ 397/mês) — 200 laudos
+    "price_1TMdubDg01Ub3mW6sKoI5lq9": { plan_id: "escritorio", laudos_limit: 200 },
 };
 
 interface StripeEvent {
@@ -178,10 +180,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
                             stripe_customer_id: customerId,
                             stripe_subscription_id: subscriptionId,
                             plan_id: planMapping?.plan_id || "pro",
-                            laudos_limit: planMapping?.laudos_limit || 50,
+                            laudos_limit: planMapping?.laudos_limit || 30,
                             status: "active",
                             laudos_used: 0,
-                            current_period_start: new Date(stripeSub.current_period_start * 1000).toISOString(),
                             current_period_end: new Date(stripeSub.current_period_end * 1000).toISOString(),
                             cancel_at_period_end: false,
                             updated_at: new Date().toISOString(),
@@ -211,9 +212,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
                 if (sub.current_period_end) {
                     updateData.current_period_end = new Date((sub.current_period_end as number) * 1000).toISOString();
-                }
-                if (sub.current_period_start) {
-                    updateData.current_period_start = new Date((sub.current_period_start as number) * 1000).toISOString();
                 }
                 if (planMapping) {
                     updateData.plan_id = planMapping.plan_id;

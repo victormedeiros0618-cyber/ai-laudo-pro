@@ -1,14 +1,26 @@
-import { useState } from 'react';
-import { Check, Star } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Check, Star, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
-const PLANS = [
+interface Plan {
+  id: 'basico' | 'pro' | 'escritorio';
+  name: string;
+  monthlyPrice: number;
+  priceId: string;
+  popular?: boolean;
+  features: Array<{ text: string; included: boolean }>;
+}
+
+const PLANS: Plan[] = [
   {
     id: 'basico',
     name: 'Básico',
     monthlyPrice: 97,
+    priceId: 'price_1TMdshDg01Ub3mW6wBnRl3gT',
     features: [
-      { text: '10 laudos/mês', included: true },
+      { text: '5 laudos/mês', included: true },
       { text: 'White-label', included: true },
       { text: 'Todos os tipos de laudo', included: true },
       { text: 'Seção pericial', included: false },
@@ -20,6 +32,7 @@ const PLANS = [
     id: 'pro',
     name: 'Pro',
     monthlyPrice: 197,
+    priceId: 'price_1TMdtmDg01Ub3mW6zcWnuVlt',
     popular: true,
     features: [
       { text: '30 laudos/mês', included: true },
@@ -34,8 +47,9 @@ const PLANS = [
     id: 'escritorio',
     name: 'Escritório',
     monthlyPrice: 397,
+    priceId: 'price_1TMdubDg01Ub3mW6sKoI5lq9',
     features: [
-      { text: 'Laudos ilimitados', included: true },
+      { text: '200 laudos/mês', included: true },
       { text: 'White-label', included: true },
       { text: 'Seção pericial', included: true },
       { text: 'Multi-usuário ilimitado', included: true },
@@ -47,6 +61,64 @@ const PLANS = [
 
 export default function Planos() {
   const [annual, setAnnual] = useState(false);
+  const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Feedback de retorno do Stripe Checkout
+  useEffect(() => {
+    const status = searchParams.get('status');
+    if (status === 'success') {
+      toast.success('Pagamento confirmado! Seu plano será ativado em alguns segundos.');
+      searchParams.delete('status');
+      setSearchParams(searchParams, { replace: true });
+    } else if (status === 'cancel') {
+      toast.info('Checkout cancelado. Você pode tentar novamente quando quiser.');
+      searchParams.delete('status');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  const handleSubscribe = async (plan: Plan) => {
+    try {
+      setLoadingPlanId(plan.id);
+
+      // Garantir que a sessão está presente (token pra edge function)
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      if (!accessToken) {
+        toast.error('Você precisa estar logado para assinar um plano.');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: {
+          priceId: plan.priceId,
+          successUrl: `${window.location.origin}/planos?status=success`,
+          cancelUrl: `${window.location.origin}/planos?status=cancel`,
+        },
+      });
+
+      if (error) {
+        console.error('Erro ao criar checkout:', error);
+        toast.error('Falha ao iniciar o checkout. Tente novamente.');
+        return;
+      }
+
+      if (!data?.url) {
+        toast.error('URL do checkout não foi retornada.');
+        return;
+      }
+
+      // Redireciona pro Stripe Checkout
+      window.location.href = data.url;
+    } catch (err) {
+      console.error('Erro inesperado no checkout:', err);
+      toast.error('Erro inesperado. Tente novamente em instantes.');
+    } finally {
+      setLoadingPlanId(null);
+    }
+  };
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -119,6 +191,7 @@ export default function Planos() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {PLANS.map(plan => {
           const price = annual ? Math.round(plan.monthlyPrice * 0.8) : plan.monthlyPrice;
+          const isLoading = loadingPlanId === plan.id;
 
           return (
             <div
@@ -192,14 +265,9 @@ export default function Planos() {
               </ul>
 
               <button
-                onClick={() => {
-                  if (plan.id === 'escritorio') {
-                    toast.info('Entre em contato com nosso comercial');
-                  } else {
-                    toast.info('Redirecionando para checkout...');
-                  }
-                }}
-                className="relative w-full py-2.5 rounded-[var(--radius-sm)] text-sm font-display font-semibold transition-all hover:brightness-110"
+                onClick={() => handleSubscribe(plan)}
+                disabled={isLoading || loadingPlanId !== null}
+                className="relative w-full py-2.5 rounded-[var(--radius-sm)] text-sm font-display font-semibold transition-all hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 style={{
                   background: plan.popular ? 'var(--color-primary)' : 'transparent',
                   color: plan.popular ? '#fff' : 'var(--color-primary)',
@@ -207,12 +275,17 @@ export default function Planos() {
                   boxShadow: plan.popular ? 'var(--shadow-neon)' : 'none',
                 }}
               >
-                {plan.id === 'escritorio' ? 'Falar com comercial' : `Assinar ${plan.name}`}
+                {isLoading && <Loader2 size={14} className="animate-spin" />}
+                {isLoading ? 'Carregando...' : `Assinar ${plan.name}`}
               </button>
             </div>
           );
         })}
       </div>
+
+      <p className="text-center text-xs font-body" style={{ color: 'var(--color-text-muted)' }}>
+        Pagamento seguro via Stripe. Cancele a qualquer momento.
+      </p>
     </div>
   );
 }
