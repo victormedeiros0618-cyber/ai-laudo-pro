@@ -37,7 +37,7 @@ export function EvidenciasTab({ tipoLaudo, laudoId, onProcessed, descricao }: Ev
     fotosSemAnalise,
   } = useLaudoContext();
 
-  const { analisarLote, loading: analisando } = useAnaliseLaudo();
+  const { analisarLote, loading: analisando, progresso } = useAnaliseLaudo();
   const [analisandoAgora, setAnalisandoAgora] = useState(false);
 
   const handleAnalisarTodas = async () => {
@@ -269,7 +269,9 @@ export function EvidenciasTab({ tipoLaudo, laudoId, onProcessed, descricao }: Ev
             {isProcessing ? (
               <>
                 <Loader size={14} className="animate-spin" />
-                Analisando...
+                {progresso.status === 'analisando' && progresso.total > 0
+                  ? `Analisando ${progresso.atual}/${progresso.total}...`
+                  : 'Analisando...'}
               </>
             ) : todasAnalisadas ? (
               <>
